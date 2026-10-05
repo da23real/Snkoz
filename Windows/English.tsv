@@ -1,0 +1,360 @@
+Prise	Recording
+Montage	Editing
+Connecter Tee	Connect Teensy
+Auto connect	Auto connect
+Nouveau montage	New edit
+Ouvrir un dossier	Open folder
+Ouvrir les prises	Open recordings
+Ouvrir projet	Open project
+Sauver projet…	Save project…
+Importer média…	Import media…
++ Piste transparente	+ Transparent track
+Latence	Latency
+Audio preview	Preview audio
+Export montage	Export edit
+Déplacement par joysticks	Move with joysticks
+Contrôleur	Controller
+Couper au curseur	Split at playhead
+Pas musical	Musical step
+Tout sélectionner	Select all
+◀ Précédent	◀ Previous
+Suivant ▶	Next ▶
+Mesure:temps:quart	Bar:beat:quarter
+Aller	Go
+FX du bloc	Block FX
+FX piste	Track FX
+FX de piste	Track FX
+Audio FX	Audio FX
+Mesure	Bar
+Noire	Quarter note
+Croche	Eighth note
+Double_croche	Sixteenth note
+Double croche	Sixteenth note
+Triple_croche	Thirty-second note
+Quadruple_croche	Sixty-fourth note
+Blanche	Half note
+Ronde	Whole note
+Supprimer — garder le trou	Delete — keep gap
+Supprimer — refermer	Delete — close gap
+Déplacer au curseur	Move to playhead
+Combler le vide	Close gap
+Réunir A/V	Link A/V
+Séparer A/V	Unlink A/V
+Position / durée du média	Media position / duration
+Sélectionner la colonne au curseur	Select column at playhead
+Tout après le curseur	Select everything after playhead
+Tout avant le curseur	Select everything before playhead
+Mute / réactiver	Mute / unmute
+Annuler	Cancel / Undo
+Insérer un média ici…	Insert media here…
++ Piste	+ Track
+Actualiser sources	Refresh sources
+Sauver config	Save setup
+Charger config	Load setup
+● Enregistrer	● Record
+Ⅱ Pause	Ⅱ Pause
+■ Arrêter	■ Stop
+Reprendre	Resume
+Abandonner préparation	Cancel preparation
+Activer Snkoz	Enable Teensy capture
+Snkoz actif — désactiver	Teensy capture active — disable
+start Teensy	Start with Teensy
+Mode test	Test mode
+Choisir le dossier	Choose folder
+Dossier par défaut	Default folder
+Configurer	Configure
+Supprimer	Delete
+Sans vidéo	No video
+Sans audio	No audio
+Aucune	None
+Aucun	None
+Direct	Live
+MIDI maître PC	PC MIDI master
+MIDI esclave	MIDI slave
+Teensy / autonome	Teensy / standalone
+Ports MIDI	Refresh MIDI ports
+Connecter MIDI	Connect MIDI
+Entrée : aucune	Input: none
+Sortie : aucune	Output: none
+Note 1 temps avant Start	Note one beat before Start
+Marqueur 1 temps avant Start	Marker one beat before Start
+Ne plus m’alerter	Do not show again
+Compris	Understood
+Horloge MIDI esclave	External MIDI clock
+Snkoz est optimisé pour piloter le départ en maître.\nEn esclave, le Start externe ne découpe pas la prise :\nle début enregistré est conservé pour régler les latences.	Snkoz is optimized for starting as MIDI master.\nIn slave mode, external Start does not trim the recording.\nThe beginning is kept for latency calibration.
+Configurer les sources ; aucune capture au lancement.	Configure sources; recording does not start automatically.
+Ports MIDI ouverts.	MIDI ports connected.
+Fermer	Close
+Valider	Confirm
+Appliquer	Apply
++ Effet	+ Effect
++ Animation	+ Animation
+Sauver FX	Save FX
+Sauver liste	Save list
+Charger FX	Load FX
+Preview FX	Preview FX
+Effet	Effect
+Déclencheur	Trigger
+Canal MIDI	MIDI channel
+Notes détectées dans la prise	Detected notes
+All — toutes les notes	All notes
+toutes notes	All notes
+Numéro CC	CC number
+Prolongement CC (s)	CC hold after last event (s)
+Détecter min / max CC	Detect CC min / max
+Centre CC	CC center
+Centre animation (%)	Animation center (%)
+Centre effet	Effect center
+Amplitude ×	Multiplier ×
+Effet = centre effet + (CC − centre CC) × amplitude.	Effect = effect center + (CC − CC center) × multiplier.
+CC → position 0..100 % dans les images ; marche arrière et sauts possibles.	CC selects a position from 0 to 100% of the animation. Reverse and jumps are supported.
+Durée musicale	Musical duration
+Durée par image	Duration per frame
+Durée maximale d’affichage	Maximum display duration
+Boucle	Loop
+Début_mesure	Bar start
+Début	Start
+Aller_retour	Ping-pong
+Retour_début	Restart
+Sans boucle : disparition dès la fin des images, même si la durée/Gate continue.	No loop: hide after the last frame, even if duration or Gate continues.
+Changer PNG / GIF / MP4	Change PNG / GIF / MP4
+Placer sur la vidéo…	Place on video…
+Position et taille	Position and size
+Masque corporel — expérimental	Body mask — experimental
+Masque : effet limité à la silhouette détectée, fond conservé.\nAnalyse locale après la prise ; aucun corps détecté = aucun effet masqué.	Mask: apply the effect only to the detected body; keep the background.\nLocal analysis after recording. No detected body means no masked effect.
+Décalage masque X (%)	Mask X offset (%)
+Décalage masque Y (%)	Mask Y offset (%)
+Précision du masque	Mask precision
+Contour du masque	Mask edge
+Lissage du masque	Mask smoothing
+Flou	Blur
+Pixelisation	Pixelation
+Luminosité	Brightness
+Teinte	Hue
+Saturation	Saturation
+Déplacement_X	Move X
+Déplacement_Y	Move Y
+Déplacement X	Move X
+Déplacement Y	Move Y
+Contraste	Contrast
+Inversion	Invert
+Contours	Edges
+Échelle	Scale
+Rotation	Rotation
+Attaque	Attack
+Retour	Release
+Attaque (%)	Attack (%)
+Retour (%)	Release (%)
+Amplitude (%)	Amount (%)
+Mesure (à partir de 1)	Bar (starting at 1)
+Temps (1 à 4)	Beat (1 to 4)
+Quart de temps	Quarter of a beat
+0 — sur le temps	0 — on the beat
+1 — + ¼ de temps	1 — + ¼ beat
+2 — + ½ temps	2 — + ½ beat
+3 — + ¾ de temps	3 — + ¾ beat
+Voir / choisir les images…	View / select frames…
+Départ / image repère	Start / trigger frame
+Choisir l’image de départ	Select start frame
+Choisir l’image au déclenchement	Select trigger frame
+Cliquer une image ci-dessous	Click a frame below
+Animation — image de départ et image au déclenchement	Animation — start and trigger frames
+Ce moment correspond à l’image repère. Aucun événement MIDI requis.\nLa position utilise les repères musicaux de la prise (4/4).	This position refers to the trigger frame. No MIDI event is required.\nPosition uses the recording's musical markers (4/4).
+Glisser l’image ; tirer le coin inférieur droit pour la taille.	Drag the image; drag its bottom-right corner to resize.
+Placement — première image déclenchée	Placement — first triggered frame
+Effets mémorisés.	Effects saved.
+Aucune donnée CC dans ce bloc.	No matching CC data in this block.
+Audio de preview	Preview audio
+Automatique	Automatic
+Référence	Reference
+Mélange	Mix
+Muet	Silent
+Off	Off
+Fin — millisecondes	Fine — milliseconds
+Image — 1/30 seconde	Frame — 1/30 second
+Décaler seulement la vidéo (audio inchangé)	Shift video only (keep audio unchanged)
+Preview latence…	Preview latency…
+Positif : retarder. Négatif : avancer. Noir/silence aux extrémités.	Positive: delay. Negative: advance. Black/silence at the edges.
+Vidéo	Video
+Audio	Audio
+Note	Note
+Canal	Channel
+Début	Start
+Fin	End
+Lecture	Play
+▶ Lecture	▶ Play
+Ⅱ Pause	Ⅱ Pause
+Annuler rendu	Cancel render
+Agrandir	Enlarge
+Options d’export	Export options
+Automatique — NVIDIA si disponible	Automatic — NVIDIA when available
+NVIDIA uniquement	NVIDIA only
+Logiciel	Software
+Originale	Original
+Exporter	Export
+Proportions conservées. Aucun agrandissement par piste.	Keep aspect ratio. Do not upscale source tracks.
+Automatique revient au logiciel si NVIDIA échoue.\nLe calcul des effets reste sur le processeur.	Automatic falls back to software if NVIDIA fails.\nEffects are still processed on the CPU.
+Audio / transparence : encodage spécifique conservé.	Audio / transparency use their dedicated encoding formats.
+Abandonner le rendu	Cancel rendering
+Arrêter et conserver la partie rendue	Stop and keep completed part
+Préparation…	Preparing…
+Rendu abandonné	Rendering cancelled
+Rien à annuler dans ce montage — sélection quittée.	Nothing to undo — selection cleared.
+Modification du montage annulée.	Edit undone.
+Sélection entièrement mutée — noir et silence à l’export.	Selection muted — black and silence on track export.
+Sélection entièrement réactivée.	Selection unmuted.
+Toutes les pistes sélectionnées ; le MIDI suit les blocs.	All tracks selected, including MIDI blocks.
+Sélection supprimée ; espace conservé.	Selection deleted; gap kept.
+Sélection supprimée et espace refermé.	Selection deleted and gap closed.
+Blocs déplacés ; événements MIDI conservés.	Blocks moved; MIDI timing preserved.
+Repères MIDI absents.	No MIDI timing markers.
+Position hors du montage.	Position outside the edit.
+Position : mesure ≥ 1, temps 1 à 4, quart 0 à 3. Exemple : 8:2:3.	Position: bar >= 1, beat 1 to 4, quarter 0 to 3. Example: 8:2:3.
+Rendu : 	Rendering: 
+Preview : 	Preview: 
+Export : 	Export: 
+Erreur : 	Error: 
+Échec : 	Failed: 
+Colonne : 	Column: 
+Contrôleur : 	Controller: 
+Entrée audio	Audio input
+Destination	Destination
+Note (C4 = 60)	Note (C4 = 60)
+Seuil (% du maximum)	Threshold (% of maximum)
+Attaque (ms)	Attack (ms)
+Release (ms)	Release (ms)
+Niveau d’entrée	Input level
+Démarrer	Start
+Scanner	Scan
+Accord / gamme	Chord / scale
+Accord gamme	Chord / scale
+Absolue	Absolute
+Détection automatique	Auto detect
+Note de calage 1 temps avant Start	Calibration note one beat before Start
+mesures · bloc + premier trigger	bars · block + first trigger
+Ordre de haut en bas. Les paramètres affichés suivent le déclencheur choisi. Modifications valides mémorisées automatiquement.	Processed from top to bottom. Parameters follow the selected trigger. Valid changes are saved automatically.
+MIDI de la prise	Recording MIDI
+MIDI du montage	Edited MIDI
+Start / zéro	Start / zero
+Horloge MIDI masquée · + = retarder, − = avancer	MIDI clock hidden · + = delay, − = advance
+Décalage vidéo	Video offset
+Décalage audio	Audio offset
+Millisecondes	Milliseconds
+Images (30 fps)	Frames (30 fps)
+Musical (noires)	Musical (quarter notes)
+Octuple croche	128th note
+Quadruple croche	64th note
+Mesure (4/4)	Bar (4/4)
+◀ Image	◀ Frame
+Image ▶	Frame ▶
+Lire 2 s / Stop	Play 2 s / Stop
+Largeur (s)	Width (s)
+Amplitude visuelle	Visual amplitude
+Aucune vidéo	No video
+Aucun audio	No audio
+Tous les canaux	All channels
+Latence — vidéo / waveform / MIDI fixe	Latency — video / waveform / fixed MIDI
+Décalage modifié — Appliquer pour mémoriser.	Offset changed — Apply to save.
+Décalages mémorisés pour les previews et exports ; MIDI inchangé.	Offsets saved for previews and exports; MIDI unchanged.
+Dernière prise — 	Latest recording — 
+Canal 	Channel 
+Piste 	Track 
+Vidéo : 	Video: 
+Audio : 	Audio: 
+Sans source	No source
+Automatique / référence	Automatic / reference
+Mélange choisi	Selected mix
+Début mesure	Bar start
+Retour début	Restart
+Aller-retour	Ping-pong
+Masque corporel	Body mask
+Vidéo / écran	Video / screen
+Audio USB	USB audio
+Traitement	Encoding
+Mode caméra	Camera mode
+Modes disponibles	Available modes
+Tester 5 secondes	Test for 5 seconds
+Vérifier connexion	Check connection
+Nom court	Short name
+Automatique (caméra)	Automatic (camera)
+Décodage texte	Text decoding
+H.264 — téléphone	H.264 — phone
+x264 — logiciel	x264 — software
+NVENC — NVIDIA	NVENC — NVIDIA
+Sources actualisées.	Sources refreshed.
+Vidéo + micro du téléphone. Résolution réglée dans Prise USB ; original conservé sur Android.	Phone video + microphone. Set resolution in the Android app; the original stays on the phone.
+Audio global des previews	Global preview audio
+Automatique : son de la piste, sinon référence	Automatic: track audio, otherwise reference
+Off — aucun son	Off — no audio
+Sélection personnalisée — mélange des cases cochées	Custom selection — mix checked tracks
+Aucune référence	No reference
+Référence du projet pour les pistes sans son	Project reference for tracks without audio
+Réglage commun à toutes les previews ; export inchangé.\nLe son suit sa propre latence et ses Audio FX. Mélange protégé par un limiteur.	Common to all previews; export is unchanged.\nAudio uses its own latency and audio effects. A limiter protects the preview mix.
+Octuple_croche	128th note
+Opacité	Opacity
+Colorisation	Colorize
+Dégradé	Gradient
+Cycle_couleurs	Colour cycle
+Postérisation	Posterize
+Choisir un effet.	Select an effect.
+Activer cet effet pour son aperçu.	Enable this effect to preview it.
+Avance / retard (ms)	Advance / delay (ms)
+Programme (0=tous, 1..128)	Program (0=all, 1..128)
+Actif	Enabled
+Activé	Enabled
+Largeur (pixels)	Width (pixels)
+Hauteur (pixels)	Height (pixels)
+Durée projet (s)	Project duration (s)
+Créer	Create
+Nouvelle piste transparente	New transparent track
+Sans prise : repères initiaux à 120 BPM, 4/4.\nAvec prise : repères musicaux existants conservés.	Without a recording: initial markers at 120 BPM, 4/4.\nWith a recording: keep its existing musical markers.
+Nom	Name
+Avance (−) / retard (+), ms	Advance (−) / delay (+), ms
+Attaque (% durée)	Attack (% duration)
+Retour (% durée)	Release (% duration)
+Contour vers…	Edge direction…
+Intérieur	Inside
+Extérieur	Outside
+Profondeur relative (%)	Relative depth (%)
+Douceur (%)	Softness (%)
+Agrandir le preview	Enlarge preview
+Gate — maintien jusqu’au Note Off	Gate — hold until Note Off
+Fichier	File
+Ouvrir	Open
+Dossier…	Folder…
+Prises	Takes
+Projet…	Project…
+Récupération	Recovery
+Aucune récupération	No recovery files
+Enregistrer	Save
+Enregistrer sous…	Save as…
+Exporter	Export
+Montage complet…	Full montage…
+Piste	Track
+Éditer	Edit
+Copier	Copy
+Coller	Paste
+Paramètres du projet	Project settings
+Latences…	Latencies…
+Audio de preview…	Preview audio…
+Langue	Language
+Insérer	Insert
+Média…	Media…
+Piste transparente…	Transparent track…
+Position	Position
+Pas	Step
+Temps (1–4)	Beat (1–4)
+Subdivision (0–3)	Subdivision (0–3)
+Activer les déplacements par joysticks	Enable joystick movement
+Rafraîchir MIDI	Refresh MIDI
+Projet enregistré : 	Project saved: 
+Récupération : 	Recovery: 
+illisible	unreadable
+Collage impossible : chevauchement.	Cannot paste: overlapping blocks.
+Blocs collés.	Blocks pasted.
+Position du média	Media position
+Mesure / temps / subdivision	Bar / beat / subdivision
+
+Bloc	Block
+Aucune piste	No tracks
+Piste supprimée.	Track deleted.

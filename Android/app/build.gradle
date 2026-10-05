@@ -1,0 +1,9 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'fr.roy.obsusb'
+    compileSdk 35
+    defaultConfig { applicationId 'fr.roy.obsusb'; minSdk 26; targetSdk 35; versionCode 100001; versionName 'V1' }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+}
+
+

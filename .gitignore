@@ -1,0 +1,26 @@
+# Sources and documentation only; binaries are attached to Releases.
+*.exe
+*.dll
+*.apk
+*.idsig
+*.zip
+*.jar
+*.class
+*.dex
+*.keystore
+*.jks
+*.pfx
+*.pem
+*.ino
+*.hex
+*.elf
+*.uf2
+BuildAndroid/
+.gradle/
+**/build/
+local.properties
+__pycache__/
+*.pyc
+Prises/
+Config/
+Preview/

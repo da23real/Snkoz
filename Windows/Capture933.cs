@@ -1,0 +1,64 @@
+// Synkoz V9.35: shared-source capture and previews. No capture is started by construction.
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+namespace Synkoz {
+public sealed class Device {public string Name,Id;public bool Video,Desktop;public string TextSource,PhoneSerial;public Rectangle Bounds;public override string ToString(){return Name;}}
+public sealed class Track {public bool Midi945;public bool Muted940;public string ShortName="";public TrackFx936 Fx=new TrackFx936();public Device Video,Audio;public string Format="WAV",Encoder="x264",PhoneCode="";public int Fps=30;public double CameraFps;public string CameraSize="",CameraFormat="";public override string ToString(){return (Video==null?"Sans vidéo":Video.Name)+" / "+(Engine.IsPhone(this)?"Micro téléphone":Audio==null?"Sans audio":Audio.Name);}}
+public sealed class Capture {
+ public Android936 Phone;public Process Process;public string File;public Track Track;public readonly StringBuilder Errors=new StringBuilder();public bool Valid;public double Duration,VideoOrigin=double.NaN,AudioOrigin=double.NaN;public Task PreviewTask;public Bitmap Preview;public readonly object Gate=new object();internal UrbanKaoz.DisplayRecorder.CaptureState TextState935;internal bool TextDirty935;public StreamWriter TextLog;public double TextEnd935;public bool PreviewOnly,Closed,StopRequested,Failed;public string Failure="";public double EpochBase;
+ public Bitmap Image(){lock(Gate){if(TextState935!=null&&TextDirty935){if(Preview!=null)Preview.Dispose();Preview=Engine.TextImage935(this);TextDirty935=false;}return Preview==null?null:(Bitmap)Preview.Clone();}}
+ public void Clear(){lock(Gate){if(Preview!=null)Preview.Dispose();Preview=null;}}
+}
+public static partial class Engine {
+ public static bool Direct939;
+ public static readonly CultureInfo Inv=CultureInfo.InvariantCulture;
+ public static string Root=Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,".."));
+ public static string FF=Path.Combine(Root,"Dependencies","ffmpeg.exe"),Probe=Path.Combine(Root,"Dependencies","ffprobe.exe");
+ public static string Q(string s){return "\""+s.Replace("\"","\\\"")+"\"";}
+ static readonly double EpochAnchor936=(DateTime.UtcNow-new DateTime(1970,1,1,0,0,0,DateTimeKind.Utc)).TotalSeconds;static readonly long MonoAnchor936=Stopwatch.GetTimestamp();
+ public static double Epoch(){return EpochAnchor936+(Stopwatch.GetTimestamp()-MonoAnchor936)/(double)Stopwatch.Frequency;}
+ public static Process Create(string exe,string args){return new Process{StartInfo=new ProcessStartInfo(exe,args){UseShellExecute=false,CreateNoWindow=true,RedirectStandardError=true,RedirectStandardOutput=true,RedirectStandardInput=true,StandardErrorEncoding=Encoding.UTF8}};}
+ public static string Run(string exe,string args,int timeout=15000){using(var p=Create(exe,args)){p.Start();var e=p.StandardError.ReadToEndAsync();var o=p.StandardOutput.ReadToEndAsync();if(!p.WaitForExit(timeout)){p.Kill();p.WaitForExit();throw new Exception("Délai de traitement dépassé.");}Task.WaitAll(e,o);if(p.ExitCode!=0)throw new Exception(e.Result);return o.Result;}}
+ public static List<Device> ParseDevices(string text){
+  var result=new List<Device>();Device last=null;
+  foreach(string line in text.Split('\n')){
+   var m=Regex.Match(line,"\"(.*)\" \\(([^)]+)\\)");
+   if(m.Success){last=null;string kind=m.Groups[2].Value;if(kind=="video"||kind=="audio"){last=new Device{Name=m.Groups[1].Value,Id=m.Groups[1].Value,Video=kind=="video"};result.Add(last);}continue;}
+   m=Regex.Match(line,"Alternative name \"(.*)\"");if(m.Success&&last!=null)last.Id=m.Groups[1].Value;
+  }return result;
+ }
+ public static List<Device> Devices(){
+  string s;using(var p=Create(FF,"-hide_banner -list_devices true -f dshow -i dummy")){p.Start();var e=p.StandardError.ReadToEndAsync();var o=p.StandardOutput.ReadToEndAsync();if(!p.WaitForExit(15000)){p.Kill();throw new Exception("Détection USB sans réponse.");}Task.WaitAll(e,o);s=e.Result;}
+  var result=ParseDevices(s);int display=0;foreach(var screen in Screen.AllScreens)result.Add(new Device{Name="Écran PC"+(++display),Id=screen.DeviceName,Video=true,Desktop=true,Bounds=screen.Bounds});try{result.AddRange(Android936.Devices());}catch{/* Optional Android discovery must not hide USB cameras. */}return result;
+ }
+ public static string NewTake(string root,DateTime now){Directory.CreateDirectory(root);string stem=now.ToString("yyyy_MM_dd_HH_mm");for(int i=1;;i++){string p=Path.Combine(root,stem+(i==1?"":" ("+i+")"));if(Directory.Exists(p))continue;Directory.CreateDirectory(p);return p;}}
+ public static string Arguments(Track t,string file,bool preview,double epochBase=0){
+  string shift="-itsoffset "+(-epochBase).ToString("F6",Inv)+" ";string a="-hide_banner -y -copyts ";bool v=t.Video!=null,au=t.Audio!=null&&!preview;int ai=0;
+  if(v&&t.Video.Desktop){var b=t.Video.Bounds;a+=shift+"-thread_queue_size 256 -use_wallclock_as_timestamps 1 -f gdigrab -framerate 30 -offset_x "+b.X+" -offset_y "+b.Y+" -video_size "+b.Width+"x"+b.Height+" -i desktop ";if(au){ai=1;a+=shift+"-thread_queue_size 1024 -use_wallclock_as_timestamps 1 -f dshow -i "+Q("audio="+t.Audio.Id)+" ";}}
+  // Keep camera and microphone in one DirectShow input, as in the fluent V9.33 recordings.
+  // Separate inputs caused a suspected scheduling regression; preserve independent stream origins below.
+  else {string input=(v?"video="+t.Video.Id:"")+(v&&au?":":"")+(au?"audio="+t.Audio.Id:"");a+=shift+"-thread_queue_size 1024 -use_wallclock_as_timestamps 1 -f dshow -rtbufsize 256M "+CameraOptions935(t)+"-i "+Q(input)+" ";}
+  var filters=new List<string>();if(v)filters.Add(preview?"[0:v]setpts=PTS-STARTPTS,fps="+(Direct939?"30":"5")+",scale=800:600:force_original_aspect_ratio=decrease,pad=800:600:(ow-iw)/2:(oh-ih)/2[preview]":"[0:v]showinfo,setpts=PTS-STARTPTS,split=2[record][pv];[record]pad=ceil(iw/2)*2:ceil(ih/2)*2[video];[pv]fps=5,scale=800:600:force_original_aspect_ratio=decrease,pad=800:600:(ow-iw)/2:(oh-ih)/2[preview]");
+  if(au)filters.Add("["+ai+":a]ashowinfo,asetpts=PTS-STARTPTS[audio]");if(filters.Count>0)a+="-filter_complex "+Q(string.Join(";",filters))+" ";
+  if(!preview){if(v)a+="-map [video] "+VideoEncoder(t.Encoder,true);if(au)a+="-map [audio] "+(v?"-c:a aac -b:a 192k ":t.Format=="MP3"?"-c:a libmp3lame -q:a 2 ":"-c:a pcm_s16le ");if(v)a+="-movflags +faststart ";a+=Q(file)+" ";}
+  if(v)a+="-map [preview] -an -c:v rawvideo -pix_fmt bgr24 -f rawvideo pipe:1";return a;
+ }
+ public static Capture Start(Track t,string folder,int index,bool preview=false,string testArguments=null){if(IsPhone(t))return PhoneStart936(t,folder,index,preview);if(t.Video!=null&&!string.IsNullOrEmpty(t.Video.TextSource))return TextStart935(t,folder,index,preview);var c=new Capture{Track=t,PreviewOnly=preview,EpochBase=Epoch(),File=preview?null:Path.Combine(folder,"Piste_"+index.ToString("00")+"_"+Sources936.FileLabel(t)+"_brut"+(t.Video!=null?".mp4":t.Format=="MP3"?".mp3":".wav"))};c.Process=Create(preview?FF:EncodingFF(t.Encoder),testArguments??Arguments(t,c.File,preview,c.EpochBase));c.Process.ErrorDataReceived+=(s,e)=>{if(e.Data==null)return;lock(c.Gate){var m=Regex.Match(e.Data,@"pts_time:([0-9.Ee+\-]+)");double value;if(m.Success&&double.TryParse(m.Groups[1].Value,NumberStyles.Float,Inv,out value)){if(e.Data.Contains("Parsed_ashowinfo")&&double.IsNaN(c.AudioOrigin))c.AudioOrigin=c.EpochBase+value;if(e.Data.Contains("Parsed_showinfo")&&double.IsNaN(c.VideoOrigin))c.VideoOrigin=c.EpochBase+value;}if(!e.Data.Contains("Parsed_showinfo")&&!e.Data.Contains("Parsed_ashowinfo")&&c.Errors.Length<65536)c.Errors.AppendLine(e.Data);}};c.Process.Start();c.Process.BeginErrorReadLine();c.PreviewTask=t.Video!=null?Task.Run(()=>ReadPreview(c)):c.Process.StandardOutput.ReadToEndAsync();return c;}
+ static void ReadPreview(Capture c){const int size=800*600*3;byte[] data=new byte[size];try{var stream=c.Process.StandardOutput.BaseStream;while(true){int at=0;while(at<size){int n=stream.Read(data,at,size-at);if(n==0)return;at+=n;}var b=new Bitmap(800,600,PixelFormat.Format24bppRgb);var bits=b.LockBits(new Rectangle(0,0,800,600),ImageLockMode.WriteOnly,PixelFormat.Format24bppRgb);Marshal.Copy(data,0,bits.Scan0,size);b.UnlockBits(bits);lock(c.Gate){if(c.Preview!=null)c.Preview.Dispose();c.Preview=b;}}}catch(Exception ex){lock(c.Gate)c.Errors.AppendLine("Preview: "+ex.Message);}}
+ public static bool Exited(Capture c){if(c.Phone!=null)return c.Closed||c.Failed;if(c.Track.Video!=null&&!string.IsNullOrEmpty(c.Track.Video.TextSource))return c.Closed;if(c.Closed||c.Process==null)return true;try{return c.Process.HasExited;}catch{return true;}}
+ public static void RequestStop(Capture c){if(c.Phone!=null){PhoneRequestStop936(c);return;}if(c.TextLog!=null){if(!c.StopRequested){c.TextEnd935=Epoch();c.StopRequested=true;}return;}if(c.StopRequested||c.Closed||c.Process==null)return;c.StopRequested=true;try{if(!c.Process.HasExited){c.Process.StandardInput.WriteLine("q");c.Process.StandardInput.Flush();}}catch(Exception ex){c.Failed=true;c.Failure=ex.Message;}}
+ public static void Stop(Capture c){if(c.Phone!=null){PhoneStop936(c);return;}if(c.Track.Video!=null&&!string.IsNullOrEmpty(c.Track.Video.TextSource)){TextStop935(c);return;}if(c.Closed)return;try{RequestStop(c);if(c.Process!=null){if(!c.Process.WaitForExit(20000)){c.Process.Kill();c.Failed=true;c.Failure="Arrêt forcé ; fichier à vérifier.";}c.Process.WaitForExit();if(c.PreviewTask!=null)c.PreviewTask.Wait(3000);if(c.Process.ExitCode!=0)c.Failed=true;}if(!c.PreviewOnly&&c.File!=null&&File.Exists(c.File)){var p=ProbeMedia(c.File);c.Duration=p.Duration;c.Valid=c.Duration>0;}}catch(Exception ex){c.Failed=true;c.Failure=ex.Message;lock(c.Gate)c.Errors.AppendLine(ex.Message);}finally{c.Closed=true;try{if(c.File!=null)File.WriteAllText(c.File+".log",c.Errors.ToString());}finally{if(c.Process!=null)c.Process.Dispose();}}}
+ public static void Finalize(Capture c,double music){if(!c.Valid||double.IsNaN(music))return;bool v=c.Track.Video!=null,au=c.Track.Audio!=null;double vo=music-c.VideoOrigin,ao=music-c.AudioOrigin;if((v&&(double.IsNaN(vo)||vo<0))||(au&&(double.IsNaN(ao)||ao<0)))throw new Exception("Source démarrée après la musique ou timestamp manquant : brut conservé.");string output=c.File.Replace("_brut.",".");var filters=new List<string>();if(v)filters.Add("[0:v]trim=start="+vo.ToString("F6",Inv)+",setpts=PTS-STARTPTS[v]");if(au)filters.Add("[0:a]atrim=start="+ao.ToString("F6",Inv)+",asetpts=PTS-STARTPTS[a]");string args="-hide_banner -y -i "+Q(c.File)+" -filter_complex "+Q(string.Join(";",filters))+" ";if(v)args+="-map [v] -c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p ";if(au)args+="-map [a] "+(v?"-c:a aac -b:a 192k ":c.Track.Format=="MP3"?"-c:a libmp3lame -q:a 2 ":"-c:a pcm_s16le ");Run(FF,args+Q(output),3600000);double duration=double.Parse(Run(Probe,"-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "+Q(output)).Trim(),Inv);if(duration<=0)throw new Exception("Prise trop courte après coupe.");c.File=output;c.Duration=duration;}
+}
+}
