@@ -1,0 +1,1 @@
+﻿using System;namespace Synkoz {public sealed partial class MontagePanel {static string BalancedSelectR12(string[] parts){return parts.Length==0?"":"+"+TreeR12(parts,0,parts.Length);}static string TreeR12(string[] parts,int start,int count){if(count==1)return parts[start];int half=count/2;return "("+TreeR12(parts,start,half)+"+"+TreeR12(parts,start+half,count-half)+")";}}}

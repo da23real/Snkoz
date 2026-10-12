@@ -1,0 +1,15 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+namespace Synkoz {
+ public sealed partial class CapturePanel {
+  string lastTakeR8;readonly Timer meterTimerR8=new Timer{Interval=50};
+  readonly CheckBox deletePhoneR8=new CheckBox{AutoSize=true,Text="Supprimer sur Android après transfert vérifié"};
+  void InitCaptureR8(){meterTimerR8.Tick+=delegate{if(!shutting)UpdateMetersA01();};meterTimerR8.Start();Disposed+=delegate{meterTimerR8.Dispose();};lastTakeR8=prefs936.LastTakeR8;deletePhoneR8.Checked=prefs936.DeletePhoneR8;deletePhoneR8.CheckedChanged+=delegate{var prefs=Preferences936.Load();prefs.DeletePhoneR8=deletePhoneR8.Checked;prefs.Save();};bar.Controls.Add(deletePhoneR8);Button("Supprimer dernier enregistrement",async()=>await DeleteLastR8());}
+  void RememberTakeR8(){var prefs=Preferences936.Load();prefs.LastTakeR8=lastTakeR8;prefs.Save();}
+  async Task DeleteLastR8(){if(Busy||paused||DirectOpen939){status.Text="Terminer la prise avant de la supprimer.";return;}string target=lastTakeR8;if(string.IsNullOrEmpty(target)||!Directory.Exists(target)){status.Text="Aucune dernière prise terminée disponible.";return;}if(MontageView.Current!=null&&string.Equals(Path.GetFullPath(MontageView.Current.Folder),Path.GetFullPath(target),StringComparison.OrdinalIgnoreCase)){status.Text="Cette prise est ouverte dans Montage. Ouvrir un autre montage avant suppression.";return;}busy=true;Lock();try{var files=Directory.GetFiles(target,"*",SearchOption.AllDirectories).Where(f=>new[]{".mp4",".mov",".wav",".mp3",".mkv"}.Contains(Path.GetExtension(f).ToLowerInvariant())).ToArray();if(files.Length==0)throw new Exception("Aucun média lisible pour confirmer la durée ; dossier conservé.");double duration=await Task.Run(()=>files.Max(f=>{var info=Engine.ProbeMedia(f);if(info.Duration<=0||double.IsNaN(info.Duration)||double.IsInfinity(info.Duration))throw new Exception("Durée inconnue : suppression annulée.");return info.Duration;}));var span=TimeSpan.FromSeconds(duration);string length=((int)span.TotalHours).ToString("00")+":"+span.Minutes.ToString("00")+":"+span.Seconds.ToString("00")+"."+span.Milliseconds.ToString("000");if(Synkoz.ErrorR8.Show(this,"Supprimer la dernière prise complète ?\n\n"+Path.GetFileName(target)+"\nDurée du fichier le plus long : "+length+"\n"+files.Length+" fichiers média.\n\nTout le dossier de cette prise (médias, segments et métadonnées) sera placé dans la corbeille. Les originaux Android conservés ne sont pas supprimés.","Supprimer dernier enregistrement",MessageBoxButtons.YesNo,MessageBoxIcon.Warning,MessageBoxDefaultButton.Button2)!=DialogResult.Yes)return;await Task.Run(()=>Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(target,Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin));lastTakeR8=null;RememberTakeR8();if(project!=null&&project.Folder==target)project=null;status.Text="Dernière prise placée dans la corbeille.";}catch(Exception ex){status.Text="Suppression : "+ex.Message;Synkoz.ErrorR8.Show(this,ex.Message,"Erreur");}finally{busy=false;Lock();}}
+ }
+}
+

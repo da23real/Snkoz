@@ -1,0 +1,1 @@
+﻿namespace Synkoz {public sealed partial class Preview936 {internal void PauseR12(){ControlPlayer(()=>player.Pause());}}}

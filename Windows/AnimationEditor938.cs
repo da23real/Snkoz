@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -7,17 +7,17 @@ using System.Windows.Forms;
 namespace Synkoz {
  public sealed partial class EffectsForm936 {
   Label animationSummary938;bool queued938;
-  void QueueRefresh938(int selected){if(queued938)return;queued938=true;BeginInvoke((Action)(()=>{queued938=false;if(!IsDisposed)RefreshList(selected);}));}
+  void QueueRefresh938(int selected){if(QueueTextRefreshR13(selected))return;if(queued938)return;queued938=true;BeginInvoke((Action)(()=>{queued938=false;if(!IsDisposed)RefreshList(selected);}));}
   void UpdateAnimationSummary938(Effect936 e){if(animationSummary938!=null&&!animationSummary938.IsDisposed)animationSummary938.Text=AnimationRules938.Summary(e);}
   void TimestampFields938(Effect936 e){
    var measure=UiR2.Number(e.TimestampMeasure938,1,1000000,0);measure.ValueChanged+=delegate{e.TimestampMeasure938=(int)measure.Value;};Field("Mesure (à partir de 1)",measure);
    var beat=UiR2.Number(e.TimestampTime938,1,4,0);beat.ValueChanged+=delegate{e.TimestampTime938=(int)beat.Value;};Field("Temps (1 à 4)",beat);
-   var quarter=Combo(new object[]{"0 — sur le temps","1 — + ¼ de temps","2 — + ½ temps","3 — + ¾ de temps"},null);quarter.SelectedIndex=e.TimestampQuarter938;quarter.SelectedIndexChanged+=delegate{e.TimestampQuarter938=quarter.SelectedIndex;};Field("Quart de temps",quarter);
+   var tick=UiR2.Number(e.TimestampTickR11>=0?e.TimestampTickR11:e.TimestampQuarter938*24,0,95,0);tick.ValueChanged+=delegate{e.TimestampTickR11=(int)tick.Value;};Field("Tick dans la noire (0–95)",tick);
    editor.Controls.Add(new Label{AutoSize=true,Text="Ce moment correspond à l’image repère. Aucun événement MIDI requis.\nLa position utilise les repères musicaux de la prise (4/4)."});
   }
   void AnimationFrames938(Effect936 e){
    animationSummary938=new Label{AutoSize=true,MaximumSize=new Size(Math.Max(420,ClientSize.Width-300),0),Text=AnimationRules938.Summary(e)};
-   var choose=new Button{Text="Voir / choisir les images…",AutoSize=true};choose.Click+=delegate{try{using(var picker=new AnimationPicker938(model,e))if(picker.ShowDialog(this)==DialogResult.OK){e.StartImage938=picker.StartImage;e.SyncImage938=picker.SyncImage;BeginInvoke((Action)(()=>{if(!IsDisposed)ShowEffect();}));}}catch(Exception ex){status.Text=ex.Message;}};Field("Départ / image repère",choose);
+   var choose=new Button{Text="Voir / choisir les images…",AutoSize=true};choose.Click+=delegate{try{using(var picker=new AnimationPicker938(model,e))if(picker.ShowDialog(this)==DialogResult.OK){e.StartImage938=picker.StartImage;e.SyncImage938=picker.SyncImage;BeginInvoke((Action)(()=>{if(!IsDisposed)ShowEffect();}));}}catch(Exception ex){status.Text=ex.Message;Synkoz.ErrorR8.Show(this,ex.Message,"Erreur");}};Field("Départ / image repère",choose);
    try{using(var asset=new AnimationAsset938(Store934.MediaPath(model.Folder,e.Asset))){var thumbs=new FlowLayoutPanel{Width=Math.Max(430,ClientSize.Width-290),Height=120,WrapContents=false};foreach(var item in new[]{Tuple.Create("Départ",e.StartImage938),Tuple.Create("Au déclenchement",e.SyncImage938)}){
       int n=Math.Max(1,Math.Min(asset.Count,item.Item2));var box=new PictureBox{Size=new Size(128,92),SizeMode=PictureBoxSizeMode.Zoom,BackColor=Color.FromArgb(45,45,50)};using(var frame=asset.Frame(n-1)){box.Image=new Bitmap(128,92);using(var g=Graphics.FromImage(box.Image)){g.Clear(Color.FromArgb(45,45,50));float s=Math.Min(128f/frame.Width,92f/frame.Height);g.DrawImage(frame,(128-frame.Width*s)/2,(92-frame.Height*s)/2,frame.Width*s,frame.Height*s);}}box.Disposed+=delegate{if(box.Image!=null)box.Image.Dispose();};var panel=new Panel{Width=150,Height=115};panel.Controls.Add(box);panel.Controls.Add(new Label{Text=item.Item1+" : "+n,Location=new Point(0,94),AutoSize=true});thumbs.Controls.Add(panel);
      }editor.Controls.Add(thumbs);}}catch(Exception ex){editor.Controls.Add(new Label{Text="Images indisponibles : "+ex.Message,AutoSize=true});}
@@ -33,7 +33,7 @@ namespace Synkoz {
    var top=new FlowLayoutPanel{Dock=DockStyle.Fill};var start=new RadioButton{Text="Choisir l’image de départ",Checked=true,AutoSize=true,Enabled=!cc};var sync=new RadioButton{Text="Choisir l’image au déclenchement",AutoSize=true,Enabled=!cc};top.Controls.Add(start);top.Controls.Add(sync);top.Controls.Add(new Label{Text=cc?"CC : grille consultative, toutes les images restent pilotables.":"Cliquer une image ci-dessous",AutoSize=true});layout.Controls.Add(top,0,0);
    grid=new FrameGrid938(asset);grid.Dock=DockStyle.Fill;grid.StartImage=StartImage;grid.SyncImage=SyncImage;grid.Chosen=i=>{if(cc)return;if(start.Checked)StartImage=i;else SyncImage=i;grid.StartImage=StartImage;grid.SyncImage=SyncImage;grid.Invalidate();Summary();};layout.Controls.Add(grid,0,1);layout.Controls.Add(info,0,2);
    var bottom=new FlowLayoutPanel{Dock=DockStyle.Fill};var previous=new Button{Text="◀ Images",AutoSize=true};var next=new Button{Text="Images ▶",AutoSize=true};var page=new Label{AutoSize=true,Margin=new Padding(8)};Action update=()=>{previous.Enabled=grid.Page>0;next.Enabled=(grid.Page+1)*8<asset.Count;page.Text="Images "+(grid.Page*8+1)+"–"+Math.Min(asset.Count,(grid.Page+1)*8)+" / "+asset.Count;};previous.Click+=delegate{grid.SetPage(grid.Page-1);update();};next.Click+=delegate{grid.SetPage(grid.Page+1);update();};bottom.Controls.Add(previous);bottom.Controls.Add(next);bottom.Controls.Add(page);
-   var ok=new Button{Text="Valider",AutoSize=true};ok.Click+=delegate{try{var candidate=UiR2.Copy(fx);candidate.StartImage938=StartImage;candidate.SyncImage938=SyncImage;candidate.Validate();AnimationRules938.ValidateFrames(candidate,asset.Count);DialogResult=DialogResult.OK;}catch(Exception ex){info.Text=ex.Message;}};bottom.Controls.Add(ok);bottom.Controls.Add(new Button{Text="Annuler",DialogResult=DialogResult.Cancel,AutoSize=true});layout.Controls.Add(bottom,0,3);update();Summary();FormClosed+=delegate{grid.Dispose();asset.Dispose();};
+   var ok=new Button{Text="Valider",AutoSize=true};ok.Click+=delegate{try{var candidate=UiR2.Copy(fx);candidate.StartImage938=StartImage;candidate.SyncImage938=SyncImage;candidate.Validate();AnimationRules938.ValidateFrames(candidate,asset.Count);DialogResult=DialogResult.OK;}catch(Exception ex){info.Text=ex.Message;Synkoz.ErrorR8.Show(this,ex.Message,"Erreur");}};bottom.Controls.Add(ok);bottom.Controls.Add(new Button{Text="Annuler",DialogResult=DialogResult.Cancel,AutoSize=true});layout.Controls.Add(bottom,0,3);update();Summary();FormClosed+=delegate{grid.Dispose();asset.Dispose();};
   }
   void Summary(){var e=UiR2.Copy(effect);e.StartImage938=StartImage;e.SyncImage938=SyncImage;info.Text=AnimationRules938.Summary(e)+"\nLecture : image de départ → dernière image. Les boucles reviennent au départ choisi.";}
  }

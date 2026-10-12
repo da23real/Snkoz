@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -6,10 +6,10 @@ using System.Windows.Forms;
 namespace Synkoz {
  // Only structural block edits are retained, never MIDI events, media or track settings.
  sealed class BlockUndo944 {
-  readonly List<MediaBlock> blocks;readonly double duration;
+  readonly List<MediaBlock> blocks;readonly double duration;readonly List<int> orderR5;readonly int nextR5;
   readonly TrackUndoA01 tracks;
-  public BlockUndo944(Montage m,bool includeTracks=false){blocks=m.Blocks.Select(b=>UiR2.Copy(b)).ToList();duration=m.Duration;if(includeTracks)tracks=new TrackUndoA01(m);}
-  public void Restore(Montage m){if(tracks!=null)tracks.Restore(m);foreach(var b in blocks){var same=m.Blocks.Where(x=>x.Track==b.Track&&x.File==b.File&&Math.Abs(x.EventOffset941-b.EventOffset941)<1e-7&&x.Start<b.Start+b.Duration-1e-7&&x.Start+x.Duration>b.Start+1e-7).ToArray();if(same.Length>0&&same.All(x=>x.Muted940==same[0].Muted940))b.Muted940=same[0].Muted940;}m.Blocks=blocks;m.Duration=duration;}
+  public BlockUndo944(Montage m,bool includeTracks=false){orderR5=m.OrderR5==null?null:m.OrderR5.ToList();nextR5=m.NextNumberR5;blocks=m.Blocks.Select(b=>b.StructureTbo15()).ToList();duration=m.Duration;if(includeTracks)tracks=new TrackUndoA01(m);}
+  public void Restore(Montage m){if(tracks!=null)tracks.Restore(m);foreach(var b in blocks){var same=m.Blocks.Where(x=>x.Track==b.Track&&x.File==b.File&&Math.Abs(x.EventOffset941-b.EventOffset941)<1e-7&&x.Start<b.Start+b.Duration-1e-7&&x.Start+x.Duration>b.Start+1e-7).ToArray();if(same.Length>0&&same.All(x=>x.Muted940==same[0].Muted940))b.Muted940=same[0].Muted940;}m.Blocks=blocks;m.Duration=duration;m.OrderR5=orderR5;m.NextNumberR5=nextR5;}
  }
  public sealed partial class MontagePanel {
   readonly TextBox musicalPosition944=new TextBox{Width=100,Text="1:1:0"};
@@ -20,3 +20,4 @@ namespace Synkoz {
   void BetweenTracks944(Control row,int left,int width){row.Paint+=delegate(object sender,PaintEventArgs paint){if(Current!=null)TimelineView940.Grid(paint.Graphics,Font,Current,new Rectangle(left,0,width,row.Height),start940,Span940,false);};row.MouseDown+=delegate(object s,MouseEventArgs e){if(e.Button==MouseButtons.Left&&e.X>=left&&e.X<=left+width){var view=row.Controls.OfType<BlocksView>().FirstOrDefault();if(view!=null)view.Focus();SetCursor940(start940+(e.X-left)*Span940/Math.Max(1,width));}};}
  }
 }
+

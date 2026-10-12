@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO.Ports;
 using System.Text;
@@ -26,6 +26,7 @@ namespace UrbanKaoz.DisplayRecorder {
    if(!closing&&autoConnect909.Checked&&port==null&&!connecting909&&now>=nextConnect909){nextConnect909=now+1000;BeginConnect909();}
   }
   void BeginConnect909(){
+   controls933=true;
    if(closing||port!=null||connecting909)return;
    string name=ports.Text;if(string.IsNullOrEmpty(name)){Notice("Choisir le port Tee pour Auto connect.");return;}
    connecting909=true;int generation=++connectGeneration909;connect.Text="Annuler connexion";Notice("Connexion au Tee…");

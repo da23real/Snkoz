@@ -75,8 +75,8 @@ les effets sans masque peuvent être utilisés avec FFmpeg seul.
 ## 5. Expected layout / Arborescence attendue
 
 ```text
-Snkoz-A01/
-  Windows/Snkoz-A01.exe
+Snkoz-VA01.15-R21/
+  Windows/Snkoz-VA01.15-R21.exe
   Windows/English.tsv
   Documentation/
   Dependencies/

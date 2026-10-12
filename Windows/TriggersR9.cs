@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Windows.Forms;
+namespace Synkoz {
+ public static class EventsR9 {
+  public static bool Channel(Effect936 e,int channel,int track=-1){if(e.ByTrack15)return track>=0&&track<16&&(e.Tracks15&(1<<track))!=0;int number=MidiChannelR9.Number(channel,track);return number>=1&&number<=32&&(e.ChannelsR9==0?number==e.Channel:(e.ChannelsR9&(1<<(number-1)))!=0);}
+  public static Trigger936[] Notes(Montage m,Effect936 e){
+   if(e.Trigger==TriggerKind936.CC_As_note)return m.CC.Where(c=>!c.StateOnlyR9&&Channel(e,c.Channel,c.Track940)&&c.Number==e.CC&&c.Value==e.CcValueR9).OrderBy(c=>c.Time).Select(c=>new Trigger936{Time=c.Time,Channel=c.Channel,Note=0,VelocityA01=127,Track940=c.Track940}).ToArray();
+   var found=m.Triggers.Where(n=>Channel(e,n.Channel,n.Track940)&&(e.Note<0||n.Note==e.Note)&&(e.EventNotes15.Count==0||e.EventNotes15.Contains(n.Note))).OrderBy(n=>n.Time).ToArray();
+   if(found.Length==0)found=m.Notes.Where(n=>Channel(e,n.Channel,n.Track940)&&(e.Note<0||n.Note==e.Note)&&(e.EventNotes15.Count==0||e.EventNotes15.Contains(n.Note))).OrderBy(n=>n.Start).Select(n=>new Trigger936{Time=n.Start,Channel=n.Channel,Note=n.Note,VelocityA01=n.Velocity,Track940=n.Track940,Delay07=n.Delay07,Repeat07=n.Repeat07}).ToArray();
+   if(!e.ConditionR9||e.Trigger!=TriggerKind936.Note)return found;
+   var cc=m.CC.Where(c=>c.Number==e.ConditionCcR9&&Channel(e,c.Channel,c.Track940)).OrderBy(c=>c.Time).ToArray();int index=0;var state=Enumerable.Repeat(-1,32).ToArray();var result=new List<Trigger936>();
+   foreach(var n in found){while(index<cc.Length&&cc[index].Time<=n.Time){state[e.ByTrack15?cc[index].Track940:MidiChannelR9.Number(cc[index].Channel,cc[index].Track940)-1]=cc[index].Value;index++;}if(state[e.ByTrack15?n.Track940:MidiChannelR9.Number(n.Channel,n.Track940)-1]==e.ConditionValueR9)result.Add(n);}return result.ToArray();
+  }
+  // Carried values initialize a condition but never create a CC trigger at a cut.
+  public static List<Cc936> Scope(IEnumerable<Cc936> source,double start,double end){var data=source.OrderBy(c=>c.Time).ToArray();var carry=data.Where(c=>c.Time<start).GroupBy(c=>new{c.Channel,c.Number,c.Track940}).Select(g=>{var c=UiR2.Copy(g.Last());c.StateOnlyR9=true;return c;});return carry.Concat(data.Where(c=>c.Time>=start&&c.Time<end).Select(c=>UiR2.Copy(c))).OrderBy(c=>c.Time).ToList();}
+ }
+ public sealed partial class EffectsForm936 {
+  void ChannelsR9(Effect936 e){var axis=Combo(new object[]{"Canal MIDI","Piste Teensy"},e.ByTrack15?"Piste Teensy":"Canal MIDI");axis.SelectedIndexChanged+=delegate{e.ByTrack15=axis.SelectedIndex==1;QueueRefresh938(list.SelectedIndex);};Field("Identifier la source par",axis);var panel=new FlowLayoutPanel{AutoSize=true,WrapContents=true,Width=300,MaximumSize=new Size(300,0)};panel.Controls.Add(new Label{Text=e.ByTrack15?"Pistes Teensy":"Canaux MIDI",AutoSize=true,Width=280});var boxes=new List<CheckBox>();for(int i=0;i<(e.ByTrack15?16:32);i++){var b=new CheckBox{Text=(i+1).ToString(),Checked=e.ByTrack15?(e.Tracks15&(1<<i))!=0:EventsR9.Channel(e,i<16?i:0,i>=16?i+1:-1),AutoSize=true,MinimumSize=new Size(48,24)};bool possible=e.ByTrack15||ChannelAllowedR15(e,i);b.Enabled=possible||b.Checked;if(!possible)b.ForeColor=SystemColors.GrayText;boxes.Add(b);panel.Controls.Add(b);b.CheckedChanged+=delegate{int mask=0;for(int j=0;j<boxes.Count;j++)if(boxes[j].Checked)mask|=1<<j;if(mask==0)channelsChosenR15.Remove(e.IdR8);else channelsChosenR15.Add(e.IdR8);if(e.ByTrack15)e.Tracks15=mask;else e.ChannelsR9=mask;e.Channel=mask==0?0:Enumerable.Range(0,e.ByTrack15?16:32).First(n=>(mask&(1<<n))!=0)+1;QueueRefresh938(list.SelectedIndex);};}editor.Controls.Add(panel);}
+  void TriggerFieldsR9(Effect936 e){if(e.Trigger==TriggerKind936.CC_As_note){CcChoiceR14("Numéro CC déclencheur",e,e.CC,v=>e.CC=v);CcValueChoiceR15("Valeur CC exacte",e,e.CC,e.CcValueR9,v=>e.CcValueR9=v,true);editor.Controls.Add(new Label{AutoSize=true,Text="Chaque message égal à cette valeur redémarre l’animation ou l’enveloppe. Les valeurs répétées déclenchent aussi. Le CC ne choisit pas une image."});}if(e.Trigger==TriggerKind936.Note){Check("Autoriser la note sous condition CC",e.ConditionR9,v=>{e.ConditionR9=v;QueueRefresh938(list.SelectedIndex);});if(e.ConditionR9){CcChoiceR14("CC de condition",e,e.ConditionCcR9,v=>e.ConditionCcR9=v);CcValueChoiceR15("Valeur requise",e,e.ConditionCcR9,e.ConditionValueR9,v=>e.ConditionValueR9=v,false);editor.Controls.Add(new Label{AutoSize=true,Text="Dernière valeur du CC sur le canal de la note. Valeur inconnue : aucun déclenchement. À horodatage identique, le CC est pris en compte avant la note."});}}
+   if(e.Kind==EffectKind936.Animation&&e.Trigger!=TriggerKind936.CC&&e.NoteImages939==0){Check("Fondu apparition / disparition",e.FadeR9,v=>{e.FadeR9=v;QueueRefresh938(list.SelectedIndex);});if(e.FadeR9){Envelope(e);editor.Controls.Add(new Label{AutoSize=true,Text="Attaque = apparition ; retour = disparition. Pourcentages de la durée réellement affichée. Attaque 0 = apparition immédiate."});}}
+  }
+ }
+ sealed partial class EffectRun936 {
+  void DrawSpriteR9(Graphics g,Image image,RectangleF destination,Rectangle source,double time){var state=g.Save();try{if(Fx.PlacementAngleR19!=0){g.TranslateTransform(destination.X+destination.Width/2,destination.Y+destination.Height/2);g.RotateTransform((float)Fx.PlacementAngleR19);destination.X=-destination.Width/2;destination.Y=-destination.Height/2;}double opacity=AnimationOpacity15(time)*(!Fx.ImagesR7.Enabled&&Fx.FadeR9&&Fx.NoteImages939!=3&&animation938!=null?animation938.OpacityR9(time-Fx.OffsetMs941/1000):1);if(opacity>=.999999){g.DrawImage(image,destination,source,GraphicsUnit.Pixel);return;}if(opacity<=0)return;using(var attr=new ImageAttributes()){var matrix=new ColorMatrix();matrix.Matrix33=(float)opacity;attr.SetColorMatrix(matrix);g.DrawImage(image,Rectangle.Round(destination),source.X,source.Y,source.Width,source.Height,GraphicsUnit.Pixel,attr);}}finally{g.Restore(state);}}
+ }
+}

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 namespace UrbanKaoz {
  public sealed class Selection {
   public HashSet<int> Clips=new HashSet<int>();public HashSet<uint> Zones=new HashSet<uint>();public int Kind,LastTrack;

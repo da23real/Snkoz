@@ -1,0 +1,2 @@
+﻿using System;using System.Linq;using System.Windows.Forms;
+namespace Synkoz {public sealed partial class EffectsForm936 {void AnimationOpacityR19(Effect936 e){int start=editor.Controls.Count;Number("Opacité fixe (%)",e.Opacity15,0,100,v=>e.Opacity15=v);MidiBindingFieldsR4("Opacité de l’animation (%)",e.OpacityR4);foreach(Control c in editor.Controls.Cast<Control>().Skip(start))c.Tag="advancedOpacityR19";}}}

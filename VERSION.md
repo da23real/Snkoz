@@ -1,40 +1,34 @@
-# A01 / V1
+# Snkoz VA01.15 R21
 
-## 1. Components
+- Application Windows : **10.1.15.20**, livraison du 11 octobre 2026.
+- Préparation publique : 12 octobre 2026.
+- Exécutable original : `Snkoz-VA01.15-R21.exe`.
+- SHA-256 original : `564a090f283337cf650a0bb06cfa91c00ebf43936770eacbdf8ec5833ed11d42`.
+- Base de développement : Windows R20, 10.1.15.19.
+- Vidéo : https://youtu.be/prQQBhpKYqU
 
-| Component | User-facing version | Technical version |
-|---|---|---|
-| Windows | Snkoz V1 | Assembly/File 10.1.0.1 |
-| Android | V1 | versionCode 100001; package fr.roy.obsusb |
+## 1. Validation
 
-A01 is the folder, filename and release-tag designation. V1 is the visible
-product version. Sources descend from Snkoz V9.42 R5 (Windows 9.42.5.0), with
-separate recovery, menu/timeline work and the final track-deletion adjustment.
-Historical source filenames are retained to preserve provenance.
+Le compte rendu R21 rapporte 475 contrôles réussis sur la livraison entière : fixtures MIDI, rendus FFmpeg, interfaces synthétiques, audio et neuf essais du lecteur Windows réel. Ce total n’est ni un nombre de bugs corrigés ni une couverture exhaustive.
 
-Android retains the previous signing identity and uses a monotonically higher
-versionCode than 94205. A self-built APK signed with another key cannot replace
-the official APK in place. Never uninstall just to bypass a signing error while
-recordings remain in private app storage.
+La publication vérifie séparément l’identité des 219 sources C#, leur compilation depuis l’arbre public, l’empreinte du binaire original, le contenu de l’archive et les fichiers publiés. Aucune nouvelle validation musicale ou matérielle n’en est déduite.
 
-## 2. Format and validation
+Restent à confirmer : son métallique/faible sur le matériel utilisateur, intermittence souris, premier plan Windows et multi-écran physiques, longues sessions et 4K. L’ancien cas d’animation vocale manquante n’est pas identifié. Les réglages guidés ne protègent pas toutes les combinaisons de tous les effets.
 
-Project/montage format 9450 is retained. Recovery uses a distinct envelope
-version 1 and .snkozrecovery extension. A01 projects were opened by the R5
-reader in synthetic tests. R5 may recreate an empty MIDI lane after opening
-a project whose MIDI track was deleted in A01.
+## 2. Formats
 
-Validation performed: 46 workspace checks, 24 track-deletion/layout checks,
-18 MIDI-editing checks, 1,280 musical navigation positions and English UI checks.
-Windows compilation passes with a pre-existing CS0649 warning. Android compilation
-and v2/v3 signatures pass. Layout screenshots were inspected at several sizes.
+| Type | Lecture | Écriture |
+| --- | --- | --- |
+| Projet / montage | 100218 à 100232 | 100232 |
+| Graphe | 3 | 3 |
+| Preset modulaire | 1 à 13 | 13 |
+| Preset de sortie | 1 à 6 | 6 |
+| Récupération | 5 à 19 | 19 |
 
-Real camera/audio/MIDI capture, physical controller operation, Android installation
-and timing on representative user projects remain to be validated. This is a
-prerelease, not a claim of universal device compatibility.
+**R20 refuse les nouvelles écritures R21.** Les formats antérieurs à 100218 restent refusés, sans migration automatique. Depuis R19, les Timestamp sont locaux au bloc : les anciens repères saisis comme absolus doivent être vérifiés. La lecture sur fixtures ne garantit pas toutes les archives personnelles.
 
-## 3. Distribution scope
+## 3. Périmètre
 
-Only Snkoz Windows/Android sources and applications are distributed here.
-Third-party dependencies must be installed separately from their official
-upstreams. No sequencer firmware or device image is included.
+Windows R21, deux PDF, vignette et guides. Aucun firmware, code de séquenceur, outil privé de conversion, clé, configuration personnelle ou média utilisateur. Les sources Android A01 restent inchangées et distinctes de l’APK Android R25 séparé.
+
+Les PDF portent la mention « dossier préparatoire » car ils ont été préparés et relus avant publication ; leur contenu est conservé dans cette release.

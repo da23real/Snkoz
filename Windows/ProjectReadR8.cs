@@ -1,0 +1,6 @@
+﻿using System;using System.IO;using System.Linq;
+namespace Synkoz {
+public static class ProjectReadR8 {
+ public static Montage Load(string path){ProjectR3 p;try{p=Store934.Load<ProjectR3>(path);}catch(Exception ex){throw new InvalidDataException("Fichier projet invalide : "+path+"\n"+ex.Message,ex);}if(p==null||p.Montage==null)throw new InvalidDataException("Fichier projet invalide : montage absent.");if(p.Version<100218||p.Version>100232)throw new NotSupportedException("Format projet incompatible : "+p.Version+". Formats lus : 100218 à 100232. Le format modulaire R3 (100217) n’est pas converti.");if(string.IsNullOrWhiteSpace(p.MediaRoot)||!Directory.Exists(p.MediaRoot))throw new DirectoryNotFoundException("Dossier média absent : "+p.MediaRoot+"\nLe projet est reconnu, mais son dossier de prises est introuvable.");var m=p.Montage;if(m.Tracks==null||m.Blocks==null||m.Tracks.Any(t=>t==null)||m.Blocks.Any(x=>x==null||x.Track<0||x.Track>=m.Tracks.Count))throw new InvalidDataException("Fichier projet invalide : pistes ou blocs incohérents.");m.Folder=p.MediaRoot;m.ProjectFile=path;foreach(var fx in m.Tracks.Select(t=>t.Fx).Concat(m.Blocks.Select(x=>x.Fx939)).Where(f=>f!=null)){GraphRules15.Validate(fx);}BlockRules939.Migrate(m);MidiBlocks945.Ensure(m);return m;}
+}
+}

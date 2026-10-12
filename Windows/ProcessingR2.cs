@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -16,16 +16,16 @@ namespace Synkoz {
   public static string Filter(int rotation){return rotation==90?",transpose=clock":rotation==180?",hflip,vflip":rotation==270?",transpose=cclock":"";}
  }
  public static class FoldersR2 {
-  public static string Get(string kind){var p=Preferences936.Load();string dir=kind=="animation"?p.LastAnimationFolder:kind=="export"?p.LastExportFolder:kind=="audio"?p.LastAudioPresetFolder:kind=="fx"?p.LastFxPresetFolder:kind=="project"?p.LastProjectFolder:p.LastMontageFolder;return !string.IsNullOrEmpty(dir)&&Directory.Exists(dir)?dir:kind=="montage"?p.DefaultTakeFolder:Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);}
-  public static void Set(string kind,string dir){var p=Preferences936.Load();if(kind=="animation")p.LastAnimationFolder=dir;else if(kind=="export")p.LastExportFolder=dir;else if(kind=="audio")p.LastAudioPresetFolder=dir;else if(kind=="fx")p.LastFxPresetFolder=dir;else if(kind=="project")p.LastProjectFolder=dir;else p.LastMontageFolder=dir;p.Save();}
+  public static string Get(string kind){var p=Preferences936.Load();string dir=kind=="fonts"?p.PersonalFontsR2:kind=="patch"?p.PatchFolderR2:kind=="animation"?p.LastAnimationFolder:kind=="export"?p.LastExportFolder:kind=="audio"?p.LastAudioPresetFolder:kind=="fx"?p.LastFxPresetFolder:kind=="project"?p.LastProjectFolder:p.LastMontageFolder;return !string.IsNullOrEmpty(dir)&&Directory.Exists(dir)?dir:kind=="fonts"?Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Fonts"):kind=="animation"&&Directory.Exists(AnimationPickerA01.PackFolder)?AnimationPickerA01.PackFolder:kind=="project"?Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),"Snkoz","Projets"):kind=="montage"?p.DefaultTakeFolder:Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);}
+  public static void Set(string kind,string dir){var p=Preferences936.Load();if(kind=="fonts")p.PersonalFontsR2=dir;else if(kind=="patch")p.PatchFolderR2=dir;else if(kind=="animation")p.LastAnimationFolder=dir;else if(kind=="export")p.LastExportFolder=dir;else if(kind=="audio")p.LastAudioPresetFolder=dir;else if(kind=="fx")p.LastFxPresetFolder=dir;else if(kind=="project")p.LastProjectFolder=dir;else p.LastMontageFolder=dir;p.Save();}
  }
  public static class TriggerR2 {
   public static string NoteName(int n){string[] names={"C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"};return names[n%12]+(n/12-1)+" — "+n;}
   public static double First(Montage m,Effect936 e){if(m.DirectMode939)return 0;
-   if(e.Trigger==TriggerKind936.Timestamp){e.Validate();var clock=new Music936(m);if(!clock.Available)throw new Exception("Repères musicaux absents pour le Timestamp.");double at=clock.Time(AnimationRules938.TimestampBeat(e));if(at<0||at>=m.Duration)throw new Exception("Timestamp en dehors de la prise.");return at;}
-   if(e.Trigger==TriggerKind936.CC){var cc=m.CC.Where(x=>x.Channel==e.Channel-1&&x.Number==e.CC).OrderBy(x=>x.Time).FirstOrDefault();if(cc!=null)return cc.Time;}
+   if(e.Trigger==TriggerKind936.Timestamp){e.Validate();var clock=new Music936(m);if(!clock.Available)throw new Exception("Repères musicaux absents pour le Timestamp.");double at=clock.Time(clock.Beat(m.EditorOriginTbo15)+AnimationRules938.TimestampBeat(e));if(at<0||at>=m.Duration)throw new Exception("Timestamp en dehors de la prise.");return at;}
+   if(e.Trigger==TriggerKind936.CC){var cc=m.CC.Where(x=>!x.StateOnlyR9&&EventsR9.Channel(e,x.Channel,x.Track940)&&(x.Number==e.CC||(e.Kind==EffectKind936.Texte&&e.TextR12.AllCC))).OrderBy(x=>x.Time).FirstOrDefault();if(cc!=null)return cc.Time;}
    else if(e.Trigger==TriggerKind936.Début_mesure){var music=new Music936(m);if(music.Available){double t=music.Time(Math.Ceiling(Math.Max(0,music.Beat(0))/4)*4);if(t<m.Duration)return Math.Max(0,t);}}
-   else {var events=m.Triggers.Count>0?m.Triggers:m.Notes.Select(n=>new Trigger936{Time=n.Start,Note=n.Note,Channel=n.Channel}).ToList();var note=events.Where(n=>n.Channel==e.Channel-1&&(e.Note<0||n.Note==e.Note)).OrderBy(n=>n.Time).FirstOrDefault();if(note!=null)return note.Time;}
+   else {var note=EventsR9.Notes(m,e).FirstOrDefault();if(note!=null)return note.Time;}
    throw new Exception("Aucun déclenchement trouvé pour ces réglages. Choisir un canal et un déclencheur présents dans la prise.");
   }
   public static Tuple<double,double> Window(Montage m,Effect936 e,int measures){double first=First(m,e);var music=new Music936(m);if(!music.Available)throw new Exception("Repères musicaux absents : durée en mesures indisponible.");double advance=AnimationRules938.Advance(e);double start=Math.Max(PrerollR4.Minimum(m),music.Time(music.Beat(first)-advance-2));start=Math.Max(PrerollR4.Minimum(m),Math.Floor(start*30)/30);double end=Math.Min(m.Duration,music.Time(music.Beat(start)+Math.Max(4*Math.Max(1,Math.Min(32,measures)),advance+3)));return Tuple.Create(start,Math.Max(1.0/30,end-start));}

@@ -1,0 +1,9 @@
+﻿using System;using System.Drawing;using System.Drawing.Drawing2D;using System.Windows.Forms;
+namespace Synkoz {
+ public sealed partial class EffectsForm936 {
+  void TextPlacementR2(Effect936 e){var button=new Button{Text="Placer sur la vidéo…",AutoSize=true};button.Click+=delegate{try{var t=e.TextR12;using(var bg=ReferenceImageR19())using(var path=new GraphicsPath()){
+   var family=PersonalFontsR2.Resolve(t);try{var style=(FontStyle)t.FontStyle;if(!family.IsStyleAvailable(style))style=FontStyle.Regular;path.AddString(TextPlacementCaptionR13(e),family,(int)style,(float)(t.Size*bg.Height/1080),PointF.Empty,StringFormat.GenericTypographic);}finally{if(string.IsNullOrEmpty(t.FontFileR2))family.Dispose();}
+   using(var scale=new Matrix()){scale.Scale((float)t.StretchXR2,(float)t.StretchYR2);path.Transform(scale);}var bounds=path.GetBounds();if(bounds.Width<=0||bounds.Height<=0)return;var sprite=new Bitmap(Math.Max(1,(int)Math.Ceiling(bounds.Width+8)),Math.Max(1,(int)Math.Ceiling(bounds.Height+8)));using(var g=Graphics.FromImage(sprite)){g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(4-bounds.X,4-bounds.Y);using(var brush=new SolidBrush(Color.FromArgb(t.Color)))g.FillPath(brush,path);}double old=sprite.Width*100.0/bg.Width;var proxy=new Effect936{Size=old,X=t.X,Y=t.Y,CenterPosition939=true,KeepAspectR2=t.KeepAspectR2,PlacementAngleR19=e.PlacementAngleR19};using(var dialog=new PlacementR2(bg,sprite,proxy))if(dialog.ShowDialog(windowOwnerR12??this)==DialogResult.OK){t.Size=Math.Max(1,Math.Min(600,t.Size*proxy.Size/old));t.StretchYR2=Math.Max(.1,Math.Min(5,t.StretchYR2*proxy.StretchYR2));t.X=proxy.X;t.Y=proxy.Y;e.PlacementAngleR19=proxy.PlacementAngleR19;QueueRefresh938(list.SelectedIndex);}
+  }}catch(Exception ex){status.Text=ex.Message;Synkoz.ErrorR8.Show(this,ex.Message,"Erreur");}};Field("Position et taille",button);}
+ }
+}

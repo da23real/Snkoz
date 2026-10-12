@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -73,7 +73,7 @@ namespace UrbanKaoz.DisplayRecorder {
       if(e.Button==MouseButtons.Right){var menu=new ContextMenuStrip();menu.Items.Add(new ToolStripLabel(c.Label+"\n\n"+c.Wiring));menu.Items.Add(new ToolStripSeparator());
         var mask=new ToolStripMenuItem(c.Masked?"Réactiver l'entrée physique":"Neutraliser l'entrée physique (session)");mask.Enabled=Connected;
         mask.Click+=delegate{int id=c.Kind=="JOY"?c.Id/10:c.Kind=="KEY"?0:c.Id;bool value=!c.Masked;Send("MASK,"+c.MaskKind+","+id+","+(value?1:0));foreach(var x in Items)if(x.MaskKind==c.MaskKind&&(x.Kind=="JOY"?x.Id/10:x.Kind=="KEY"?0:x.Id)==id)x.Masked=value;Invalidate();};
-        menu.Items.Add(mask);menu.Closed+=delegate{menu.Dispose();};menu.Show(this,e.X,e.Y);return;
+        menu.Items.Add(mask);Synkoz.MenuLifetimeR13.Attach(menu,this);menu.Show(this,e.X,e.Y);return;
       }
       tip.Hide(this);if(e.Button!=MouseButtons.Left||!Connected)return;
       active=c;last=e.Location;drag=0;turning=false;latchedClick=(ModifierKeys&Keys.Control)!=0;

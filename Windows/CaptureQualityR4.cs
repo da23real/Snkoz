@@ -1,0 +1,17 @@
+﻿using System;using System.IO;using System.Linq;using System.Collections.Generic;using System.Threading;using System.Threading.Tasks;using System.Windows.Forms;
+namespace Synkoz {
+ public static class CaptureQualityR4 {
+  static bool Critical(Capture c){string error=(c.Failure??"").ToLowerInvariant();return c.Failed&&(error.Contains("crc")||error.Contains("sha256")||error.Contains("corromp")||error.Contains("copie android incomplète"));}
+  public static double Tolerance(double expected){return expected*.1;}
+  public static int Severity(Capture c,double expected){if(Critical(c))return 2;if(!c.Valid||double.IsNaN(c.Duration)||double.IsInfinity(c.Duration)||c.Duration<=0)return 2;if(double.IsNaN(expected)||double.IsInfinity(expected)||expected<=0)return 0;double fraction=(expected-c.Duration)/expected;return fraction>.2+1e-9?2:fraction>.1+1e-9?1:0;}
+  public static string Issue(Capture c,double expected){int severity=Severity(c,expected);if(Critical(c))return "Erreur média : "+c.Failure;if(!c.Valid||double.IsNaN(c.Duration)||double.IsInfinity(c.Duration)||c.Duration<=0)return "Média illisible ou vide.";return severity==0?null:(severity==2?"Incomplet : ":"Durée réduite : ")+Math.Max(0,(expected-c.Duration)*100/expected).ToString("0.0")+" % manquants ("+c.Duration.ToString("0.00")+" / "+expected.ToString("0.00")+" s).";}
+  public static void Recheck(Montage m){var probes=new Dictionary<string,Tuple<bool,bool,double>>();foreach(var b in m.Blocks.Where(b=>!MontageTbo15.Is(m,b)&&!m.Tracks[b.Track].Midi945&&!b.Imported942&&!string.IsNullOrEmpty(b.Issue))){try{string file=!string.IsNullOrEmpty(b.RawFile)?b.RawFile:b.File;string path=Store934.MediaPath(m.Folder,file);if(!File.Exists(path)&&!string.IsNullOrEmpty(b.File))path=Store934.MediaPath(m.Folder,b.File);Tuple<bool,bool,double> result;if(!probes.TryGetValue(path,out result)){var info=Engine.ProbeMedia(path);result=Tuple.Create(info.Video,info.Audio,info.Duration);probes[path]=result;}var c=new Capture{Failed=true,Failure=b.Issue,Valid=b.Video?result.Item1:result.Item2,Duration=Math.Max(0,result.Item3-(b.Video?b.RawVideoZero??b.MediaOffset939:b.RawAudioZero??b.MediaOffset939))};b.Issue=Issue(c,b.Duration);b.QualityR6=Severity(c,b.Duration);}catch{b.QualityR6=2;}}}
+ }
+ public static class PrepareR6 {
+  public static async Task Run(IEnumerable<Capture> captures,Func<bool> abandon,int parallel,Action<Capture> stop=null){if(stop==null)stop=Engine.Stop;using(var local=new SemaphoreSlim(Math.Max(1,Math.Min(2,parallel))))using(var remote=new SemaphoreSlim(1)){await Task.WhenAll(captures.Select(async c=>{c.PrepareStageR4=c.Phone!=null?"Attente transfert":"Attente calcul";var queue=c.Phone!=null?remote:local;await queue.WaitAsync();try{await Task.Run(()=>{if(abandon())c.AbandonR6=true;if(c.Phone!=null){c.Phone.AbandonR6=()=>c.AbandonR6||abandon();c.Phone.CancelR6=c.CancelR6.Token;}stop(c);if(c.Valid&&CaptureQualityR4.Severity(c,c.Duration)==0)c.Failed=false;if(c.AbandonR6){c.PrepareStageR4="Abandonnée — fichiers conservés";return;}c.PrepareStageR4=c.Valid?"Média vérifié":"Erreur média";c.PreparePercentR4=c.Valid?90:0;});}finally{queue.Release();}}));}}
+ }
+ public sealed partial class CapturePanel {
+  int prepareParallelR6=1;
+  void InitPrepareR6(){var count=new ComboBox{Width=145,DropDownStyle=ComboBoxStyle.DropDownList};count.Items.AddRange(new object[]{"1 calcul à la fois","2 calculs à la fois"});count.SelectedIndex=0;count.SelectedIndexChanged+=delegate{prepareParallelR6=count.SelectedIndex+1;};bar.Controls.Add(count);}
+ }
+}

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
 using System.Drawing;
@@ -15,7 +15,7 @@ namespace UrbanKaoz.DisplayRecorder {
       if(sdForm==null||sdForm.IsDisposed){sdForm=new SdFilesForm(SdRequest905,()=>ready);sdForm.Show(this);}else sdForm.Activate();
     }
     bool AcceptSd905(string packet){
-      if(!packet.StartsWith("SD1,"))return false;
+      if(!packet.StartsWith("SD1,")&&!packet.StartsWith("RAM08,"))return false;
       string[] fields=packet.Split(',');
       if(fields.Length>=4&&fields[1]==sdExpected&&sdResponse!=null)sdResponse.TrySetResult(fields);
       return true;
@@ -25,7 +25,7 @@ namespace UrbanKaoz.DisplayRecorder {
       if(sdResponse!=null)throw new IOException("Une opération SD est déjà en cours.");
       sdExpected=(++sdSequence).ToString(System.Globalization.CultureInfo.InvariantCulture);
       var response=new TaskCompletionSource<string[]>();sdResponse=response;
-      string packet="SD1,"+sdExpected+","+command;
+      bool ram08=command.StartsWith("RAM08:");if(ram08)command=command.Substring(6);string packet=(ram08?"RAM08,":"SD1,")+sdExpected+","+command;
       try {
         for(int attempt=0;attempt<3;attempt++){
           Write(packet);
@@ -68,7 +68,7 @@ namespace UrbanKaoz.DisplayRecorder {
       bool opened=false;
       try{await request("OPEN");opened=true;await action();if(!cancelled)status.Text="Opération terminée.";}
       catch(OperationCanceledException){status.Text="Opération annulée.";}
-      catch(Exception ex){status.Text=ex.Message;}
+      catch(Exception ex){status.Text=ex.Message;Synkoz.ErrorR8.Show(this,ex.Message,"Erreur");}
       if(opened)try{await request("CLOSE");}catch{status.Text+=" Fermeture non confirmée ; expiration automatique sous 15 s.";}
       busy=false;foreach(Control c in actions.Controls)c.Enabled=true;cancel.Enabled=false;files.Enabled=true;
     }
@@ -86,7 +86,7 @@ namespace UrbanKaoz.DisplayRecorder {
         string name=Encoding.UTF8.GetString(Decode(r[5]));files.Items.Add(new ListViewItem(new[]{name,r[3]=="D"?"Dossier":"Fichier",r[4]}));}
     }
     async Task Download(){
-      string name=Selected();using(var d=new SaveFileDialog{FileName=name,OverwritePrompt=true}){
+      string name=Selected();using(var d=new SaveFileDialog{AutoUpgradeEnabled=true,FileName=name,OverwritePrompt=true}){
         if(d.ShowDialog(this)!=DialogResult.OK)return;
         // A dialog can exceed the transfer lease; renew before any I/O.
         await Renew();var r=await request("GET,"+PathHex(Full(name)));long size;
@@ -104,11 +104,11 @@ namespace UrbanKaoz.DisplayRecorder {
     }
     async Task Renew(){await request("CLOSE");await request("OPEN");CheckCancel();}
     async Task Upload(){
-      using(var d=new OpenFileDialog{Multiselect=false}){
+      using(var d=new OpenFileDialog{AutoUpgradeEnabled=true,Multiselect=false}){
         if(d.ShowDialog(this)!=DialogResult.OK)return;string name=Path.GetFileName(d.FileName);bool replace=false;
         foreach(ListViewItem item in files.Items)if(string.Equals(item.Text,name,StringComparison.OrdinalIgnoreCase)){
           if(item.SubItems[1].Text=="Dossier")throw new IOException("Un dossier porte déjà ce nom.");
-          if(MessageBox.Show(this,"Remplacer « "+name+" » sur la carte SD ?","Envoi vers Tee",MessageBoxButtons.OKCancel)!=DialogResult.OK)return;replace=true;break;
+          if(Synkoz.ErrorR8.Show(this,"Remplacer « "+name+" » sur la carte SD ?","Envoi vers Tee",MessageBoxButtons.OKCancel)!=DialogResult.OK)return;replace=true;break;
         }
         await Renew();using(var input=new FileStream(d.FileName,FileMode.Open,FileAccess.Read,FileShare.Read)){
           if(input.Length>uint.MaxValue)throw new IOException("Fichier trop volumineux.");
@@ -119,7 +119,7 @@ namespace UrbanKaoz.DisplayRecorder {
         await RefreshFiles();
       }
     }
-    async Task Delete(){string name=Selected();if(MessageBox.Show(this,"Supprimer « "+name+" » de la carte SD ?","Suppression",MessageBoxButtons.OKCancel)!=DialogResult.OK)return;await Renew();await request("DELETE,"+PathHex(Full(name)));await RefreshFiles();}
+    async Task Delete(){string name=Selected();if(Synkoz.ErrorR8.Show(this,"Supprimer « "+name+" » de la carte SD ?","Suppression",MessageBoxButtons.OKCancel)!=DialogResult.OK)return;await Renew();await request("DELETE,"+PathHex(Full(name)));await RefreshFiles();}
     async Task Rename(){string name=Selected();using(var dialog=new Form{Text="Renommer",Size=new Size(440,150),StartPosition=FormStartPosition.CenterParent,MinimizeBox=false,MaximizeBox=false}){
       var text=new TextBox{Text=name,Dock=DockStyle.Top};var ok=new Button{Text="Renommer",Dock=DockStyle.Bottom,DialogResult=DialogResult.OK};dialog.Controls.Add(text);dialog.Controls.Add(ok);dialog.AcceptButton=ok;
       if(dialog.ShowDialog(this)!=DialogResult.OK)return;string next=text.Text.Trim();if(next.Length==0||next=="."||next==".."||next.IndexOfAny(Path.GetInvalidFileNameChars())>=0)throw new IOException("Nom invalide.");

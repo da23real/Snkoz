@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -11,7 +11,7 @@ namespace UrbanKaoz.DisplayRecorder {
   internal static class Program {
     [DllImport("user32.dll")]static extern bool SetProcessDPIAware();
     [STAThread]static int Main(string[] args){
-      SetProcessDPIAware();Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);
+      SetProcessDPIAware();Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);Application.ThreadException+=(s,e)=>Synkoz.ErrorR8.Show(e.Exception.ToString(),"Erreur inattendue");Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);
       try{
         if(args.Length==2&&args[0]=="--android-synthetic"){AndroidTests936.Run(args[1]);return 0;}
         if(args.Length==2&&args[0]=="--android-check"){Tests936.AndroidCheck(args[1]);return 0;}
@@ -27,8 +27,8 @@ namespace UrbanKaoz.DisplayRecorder {
         if(args.Length>1&&args[0]=="--sd-test"){SdTests905.Run(args[1]);return 0;}
         if(args.Length>1&&args[0]=="--self-test"){Tests.Run(args[1]);return 0;}
         if(args.Length==4&&args[0]=="--live-test"){Tests.Live(args[1],args[2],args[3]);return 0;}
-        Synkoz.Language945.Start();Application.Run(new MainForm());return 0;
-      }catch(Exception ex){string p=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"error831.txt");File.WriteAllText(p,ex.ToString());if(args.Length==0)MessageBox.Show(ex.Message,"Snkoz");return 1;}
+        Synkoz.UiPolicyR20.Start();Synkoz.TagIndexR19.Start();Synkoz.Language945.Start();Application.Run(new MainForm());return 0;
+      }catch(Exception ex){string p=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"error831.txt");File.WriteAllText(p,ex.ToString());if(args.Length==0)Synkoz.ErrorR8.Show(ex.Message,"Snkoz");return 1;}
     }
   }
   internal static class Tests {

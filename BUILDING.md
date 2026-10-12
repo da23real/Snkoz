@@ -1,41 +1,25 @@
-# Building Snkoz A01
+# Building Snkoz Windows R21
 
 ## 1. Windows
 
-The `Windows` directory contains the exact C# sources of the published Windows
-10.1.0.1 application. On Windows with .NET Framework 4.x, run `Compiler.ps1`
-from PowerShell. It invokes Microsoft's Framework C# compiler and produces
-`Windows/Snkoz-A01.exe`. No Arduino toolchain is used.
+The 219 C# files in `Windows` match the local VA01.15 R21 delivery byte for byte. No application behavior was changed for publication. The packaging build script is adapted to the public directory layout.
 
-Keep `English.tsv` alongside the executable and install runtime dependencies
-as described in [DEPENDENCIES](DEPENDENCIES.md). The compiled Windows program
-contains an optional hardware-control interface, but no device firmware.
-Some historical source/test names and namespace names still use UrbanKaoz or
-Synkoz; the published application name is Snkoz.
+On Windows with the .NET Framework 4.x compiler installed, run:
 
-## 2. Android
+```powershell
+& ./Windows/Compiler.ps1
+```
 
-The `Android/app/src/main` tree contains the original Java, manifest and icon.
-The app uses Java 8 language level, SDK 35 and minimum API 26.
+Output: `Build/Windows/Snkoz-VA01.15-R21.exe`, version 10.1.15.20. Entry point: `UrbanKaoz.DisplayRecorder.Program`; historical namespace/file names remain. The CS0649 warning on `NotesView.Model` is known. No Arduino toolchain is used.
 
-`Tools/build_android_unsigned.ps1` is the existing release build procedure
-with the private signing step removed and the JDK path supplied by JAVA_HOME
-or the `-Jdk` parameter. Supply the installed SDK with `-Sdk` if necessary.
-It requires Build Tools 35.0.0 and the android-35 platform; output is
-`BuildAndroid/aligned.apk`. Sign that file with your own keystore using
-Android's apksigner before installing a development build. See the official
-[app-signing documentation](https://developer.android.com/studio/publish/app-signing).
+For execution, keep the executable and `English.tsv` under `Windows`, and runtime dependencies in the adjacent `Dependencies` directory. See [DEPENDENCIES.md](DEPENDENCIES.md). The historical English catalogue is partial; French is the reference interface for recent additions.
 
-No official signing key or password is provided. A differently signed build
-cannot replace the official app while retaining the same installed identity.
-Do not uninstall an app containing recordings just to bypass a signing error.
+The release distributes the original validated R21 executable. A separate verification build checks these public sources. Compiler timestamps may make hashes differ even with identical sources.
 
-The app/build.gradle file records the same application ID and version metadata;
-the standalone PowerShell build does not require Gradle or a downloaded wrapper.
+## 2. Android remains historical
 
-## 3. Contribution scope
+`Android` and `Tools/build_android_unsigned.ps1` remain unchanged A01 companion-camera sources, not the sources of the separate Android R25 APK. This Windows release does not rebuild or replace Android. The historical procedure uses Java 8, SDK 35 and API 26 minimum and produces an unsigned APK. No private signing material is present.
 
-Original sources and public documentation are covered by LICENSE; external
-SDKs and dependencies retain their own licenses. Only Windows/Android changes
-belong in this repository. Do not contribute sequencer firmware, SDK binaries,
-personal media or signing material.
+## 3. Publication boundary
+
+Only desktop C# sources, desktop assets, public documentation and existing companion-camera sources belong here. No sequencer implementation, microcontroller source/firmware or private converter is included. Hardware-facing C# files implement PC communication only. The optional converter command requires a separate private tool and is unavailable in the standalone public package.

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -71,12 +71,12 @@ namespace UrbanKaoz {
    Cancel();}
   void Wheel(object sender,MouseEventArgs e){if((ModifierKeys&(Keys.Control|Keys.Shift))==(Keys.Control|Keys.Shift)){row=Math.Max(24,Math.Min(96,row*(e.Delta>0?1.2f:1/1.2f)));}else if((ModifierKeys&Keys.Control)!=0){double anchor=start+(e.X-left)/step;step=Math.Max(1,Math.Min(60,step*(e.Delta>0?1.2f:1/1.2f)));start=anchor-(e.X-left)/step;}else if((ModifierKeys&Keys.Shift)!=0)start-=e.Delta/120.0*16;else sy-=e.Delta/120f*row*3;Clamp();Invalidate();}
   void EditZone(int track,Zone z,long tick){using(var form=new Form{Text="T"+(track+1)+" · Zone libre",Width=310,Height=255,StartPosition=FormStartPosition.CenterParent,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false}){
-    var kind=new ComboBox{FormattingEnabled=true,Left=15,Top=15,Width=265,DropDownStyle=ComboBoxStyle.DropDownList};kind.Items.AddRange(new object[]{"Note MIDI","Automation CC"});kind.SelectedIndex=z==null?0:z.Kind;kind.Enabled=z==null;form.Controls.Add(kind);
+    var kind=new Synkoz.ScrollComboR8{FormattingEnabled=true,Left=15,Top=15,Width=265,DropDownStyle=ComboBoxStyle.DropDownList};kind.Items.AddRange(new object[]{"Note MIDI","Automation CC"});kind.SelectedIndex=z==null?0:z.Kind;kind.Enabled=z==null;form.Controls.Add(kind);
     var a=Number(form,"Note / numéro CC",50,0,127,z==null?60:z.A);var b=Number(form,"Vélocité / valeur",85,0,127,z==null?100:z.B);var gate=Number(form,"Durée (ticks, pas=96)",120,1,98304,z==null?96:z.Gate);
     var ok=new Button{Text="Valider",Left=175,Top=163,DialogResult=DialogResult.OK};form.Controls.Add(ok);form.AcceptButton=ok;
     if(form.ShowDialog(FindForm())==DialogResult.OK){if(kind.SelectedIndex==0&&b.Value==0)return;send(z==null?"ZADD,"+kind.SelectedIndex+","+track+","+tick+","+(long)gate.Value+","+(int)a.Value+","+(int)b.Value:"ZEDIT,"+z.Id+","+tick+","+(long)gate.Value+","+(int)a.Value+","+(int)b.Value);}
   }}
-  NumericUpDown Number(Form f,string label,int y,long min,long max,long value){f.Controls.Add(new Label{Text=label,Left=15,Top=y+3,Width=175});var n=new NumericUpDown{Left=195,Top=y,Width=80,Minimum=min,Maximum=max,Value=Math.Max(min,Math.Min(max,value))};f.Controls.Add(n);return n;}
+  NumericUpDown Number(Form f,string label,int y,long min,long max,long value){f.Controls.Add(new Label{Text=label,Left=15,Top=y+3,Width=175});var n=new Synkoz.ScrollNumberR8{Left=195,Top=y,Width=80,Minimum=min,Maximum=max,Value=Math.Max(min,Math.Min(max,value))};f.Controls.Add(n);return n;}
  }
 
 }

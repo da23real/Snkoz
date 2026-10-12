@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -13,6 +13,7 @@ namespace UrbanKaoz.DisplayRecorder {
   internal static void Run(string directory){
    Directory.CreateDirectory(directory);count=0;
    Check(NumericEntry917.Compatible("V9.18")&&!NumericEntry917.Compatible("V9.16")&&NumericEntry917.Compatible("V10.00"),"firmware capability");
+   Check(NumericEntry917.Compatible("VA01.08")&&NumericEntry917.Compatible("VA01.09")&&!NumericEntry917.Compatible("VAgarbage"),"full revision labels");
    int committed=0,value=0;
    using(var f=new NumericEntry917("K5 — Gate",96,1,65535,delegate(int x){committed++;value=x;})){
     f.Show();Application.DoEvents();f.Input.Text="192";Application.DoEvents();Check(committed==0,"typing is local");
@@ -42,13 +43,15 @@ namespace UrbanKaoz.DisplayRecorder {
    }
    packets.Clear();
    using(var main=new MainForm()){
-    main.TestWriter=packets.Add;main.Show();Application.DoEvents();main.TestPacket("PC1,HELLO,V9.18,1");
+    main.TestWriter=packets.Add;main.Show();Application.DoEvents();main.TestPacket("PC1,HELLO,VA01.09,1");
     var s=(Surface)typeof(MainForm).GetField("surface",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(main);
     int x=(int)(340f*s.Width/1240),y=(int)(70f*s.Height/312);
     Mouse(s,"OnMouseDown",2,x,y);main.TestPacket("PC1,ACK,1,OK");main.TestPacket("PC1,VALUE,4,9,96,1,65535");Application.DoEvents();
     var f=(NumericEntry917)typeof(Surface).GetField("numericForm917",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(s);
     Check(f!=null&&!f.IsDisposed,"main form deactivation does not cancel own numeric editor");
     f.Input.Text="25";Check(!packets.Exists(p=>p.Contains(",VSET,")),"main form typing remains local");f.Submit();
+    for(int round=0;round<20;round++){foreach(string packet in packets.ToArray()){var parts=packet.Split(',');int seq;if(parts.Length>=3&&parts[0]=="PC1"&&int.TryParse(parts[1],out seq))main.TestPacket("PC1,ACK,"+seq+",OK");}}
+    File.WriteAllLines(Path.Combine(directory,"numeric_protocol.txt"),packets);
     Check(packets.Exists(p=>p.EndsWith(",VSET,4,25,9")),"main form submits numeric protocol");
    }
    File.WriteAllText(Path.Combine(directory,"numeric_tests.txt"),"PASS="+count+", FAIL=0\r\nOnly numeric entry and direct mouse/protocol dependencies tested.\r\n");

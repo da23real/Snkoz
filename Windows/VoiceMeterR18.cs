@@ -1,0 +1,28 @@
+﻿using System;using System.Drawing;using System.Linq;using System.Windows.Forms;
+namespace Synkoz {
+ public sealed partial class Track {public bool VoiceFixedRangeR18;public double VoiceLowDbR18=-40,VoiceHighDbR18=-6;public int VoiceWhisperR18=49,VoiceShoutR18=89;}
+ internal static class VoiceLevelR18 {
+  internal static int Velocity(double db,Track t){return db<=-48?0:VoixMidi.Engine.Velocity(db,t.VoiceLowDbR18,t.VoiceHighDbR18,1,127);}
+  internal static Color ColorFor(int velocity,Track t){return velocity<=t.VoiceWhisperR18?Color.LimeGreen:velocity<=t.VoiceShoutR18?Color.Yellow:Color.Red;}
+ }
+ internal sealed class VoiceMeterR18:Control {
+  internal Track Settings;internal double Db=double.NegativeInfinity;internal bool Available;
+  internal VoiceMeterR18(){DoubleBuffered=true;Width=560;Height=34;}
+  protected override void OnPaint(PaintEventArgs e){e.Graphics.Clear(Color.FromArgb(28,28,30));if(!Available){TextRenderer.DrawText(e.Graphics,"Active le preview audio de cette piste pour voir le niveau.",Font,ClientRectangle,Color.White,TextFormatFlags.VerticalCenter);return;}int velocity=VoiceLevelR18.Velocity(Db,Settings);int left=0;foreach(int end in new[]{Settings.VoiceWhisperR18,Settings.VoiceShoutR18,127}){int visible=Math.Min(velocity,end);if(visible>left)using(var brush=new SolidBrush(VoiceLevelR18.ColorFor(end,Settings)))e.Graphics.FillRectangle(brush,2+(Width-4)*left/127f,2,(Width-4)*(visible-left)/127f,Height-4);left=end;}foreach(int cut in new[]{Settings.VoiceWhisperR18,Settings.VoiceShoutR18}){float x=2+(Width-4)*cut/127f;e.Graphics.DrawLine(Pens.White,x,0,x,Height);} }
+ }
+ public static partial class VoiceSettingsR18 {
+  internal static bool Show(IWin32Window owner,Track target,Func<double?> level){var t=UiR2.Copy(target);using(var f=new Form{Text="Voice to MIDI",ClientSize=new Size(620,490),StartPosition=FormStartPosition.CenterParent})using(var timer=new Timer{Interval=100})using(var tips=new ToolTip()){
+   var flow=new FlowLayoutPanel{Dock=DockStyle.Fill,Padding=new Padding(12),FlowDirection=FlowDirection.TopDown,WrapContents=false,AutoScroll=true};f.Controls.Add(flow);
+   Action<string,Control> field=(label,c)=>{flow.Controls.Add(new Label{Text=label,AutoSize=true});flow.Controls.Add(c);};
+   var channel=UiR2.Number(t.VoiceVirtualR8>=17?t.VoiceVirtualR8:t.VoiceChannelR8+1,1,32,0);field("Canal MIDI (1–16 classique, 17–32 virtuel)",channel);var cc=UiR2.Number(t.VoiceCcR8,0,119,0);field("CC de sélection animation",cc);flow.Controls.Add(new Label{AutoSize=true,Text="Conseil : garde le CC 20 pour la compatibilité des presets d’animation."});
+   var meter=new VoiceMeterR18{Settings=t};flow.Controls.Add(meter);tips.SetToolTip(meter,"Vert : chuchoté ; jaune : parlé ; rouge : crié. Les seuils restent ajustables au montage. Le niveau est indicatif, pas une reconnaissance du type de voix.");
+   var stable=new CheckBox{Text="Échelle stable pour retrouver ces seuils dans l’animation",Checked=t.VoiceFixedRangeR18,AutoSize=true};stable.CheckedChanged+=delegate{t.VoiceFixedRangeR18=stable.Checked;};flow.Controls.Add(stable);
+   flow.Controls.Add(new Label{AutoSize=true,MaximumSize=new Size(570,0),Text="Vert 0–49 · jaune 50–89 · rouge 90–127 par défaut. Sans échelle stable, l’analyse adapte les vélocités après la prise ; les couleurs sont alors indicatives."});
+   var range=new FlowLayoutPanel{Width=570,Height=30};var low=UiR2.Number(t.VoiceLowDbR18,-70,-1,1);var high=UiR2.Number(t.VoiceHighDbR18,-69,0,1);low.Width=high.Width=80;range.Controls.AddRange(new Control[]{new Label{Text="Bas dBFS",AutoSize=true},low,new Label{Text="Haut dBFS",AutoSize=true},high});low.ValueChanged+=delegate{t.VoiceLowDbR18=(double)low.Value;};high.ValueChanged+=delegate{t.VoiceHighDbR18=(double)high.Value;};flow.Controls.Add(range);
+   var cuts=new FlowLayoutPanel{Width=570,Height=30};var whisper=UiR2.Number(t.VoiceWhisperR18,0,t.VoiceShoutR18-1,0);var shout=UiR2.Number(t.VoiceShoutR18,t.VoiceWhisperR18+1,126,0);whisper.Width=shout.Width=65;cuts.Controls.AddRange(new Control[]{new Label{Text="Fin vert",AutoSize=true},whisper,new Label{Text="Fin jaune",AutoSize=true},shout});whisper.ValueChanged+=delegate{t.VoiceWhisperR18=(int)whisper.Value;shout.Minimum=whisper.Value+1;};shout.ValueChanged+=delegate{t.VoiceShoutR18=(int)shout.Value;whisper.Maximum=shout.Value-1;};flow.Controls.Add(cuts);
+   var separate=new CheckBox{Text="Piste classique séparée dans le Montage",AutoSize=true,Checked=t.VoiceSeparateR9};flow.Controls.Add(separate);var ok=new Button{Text="Valider",AutoSize=true};ok.Click+=delegate{if(t.VoiceLowDbR18>=t.VoiceHighDbR18){ErrorR8.Show(f,"Le niveau bas doit être inférieur au niveau haut.");return;}f.DialogResult=DialogResult.OK;};flow.Controls.Add(ok);f.AcceptButton=ok;
+   timer.Tick+=delegate{double? db=level==null?null:level();meter.Available=db.HasValue;meter.Db=db??double.NegativeInfinity;meter.Invalidate();};timer.Start();if(f.ShowDialog(owner)!=DialogResult.OK)return false;int selected=(int)channel.Value;target.VoiceChannelR8=(selected-1)%16;target.VoiceCcR8=(int)cc.Value;target.VoiceVirtualR8=selected>16?selected:-1;target.VoiceSeparateR9=separate.Checked;target.VoiceFixedRangeR18=t.VoiceFixedRangeR18;target.VoiceLowDbR18=t.VoiceLowDbR18;target.VoiceHighDbR18=t.VoiceHighDbR18;target.VoiceWhisperR18=t.VoiceWhisperR18;target.VoiceShoutR18=t.VoiceShoutR18;return true;
+  }}
+ }
+ public sealed partial class CapturePanel {double? VoiceDbR18(Track t){var c=(recording?active:previews).FirstOrDefault(x=>x.Track==t);if(c==null)return null;lock(c.Gate)return Engine.Epoch()-c.RmsAtR18<1?(double?)c.RmsDbR18:null;}}
+}

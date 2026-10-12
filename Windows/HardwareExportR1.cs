@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -16,7 +16,7 @@ namespace Synkoz {
    try{render(encoder);}catch(NvidiaExportExceptionR1 ex){token.ThrowIfCancellationRequested();if(mode!=ExportEncoderR1.Automatique||encoder!="nvenc")throw;fallback="repli après échec NVIDIA";encoder="x264";log(ex.ToString());report("Reprise depuis le début en logiciel — échec NVIDIA",-1);render(encoder);}
    token.ThrowIfCancellationRequested();string result=encoder=="nvenc"?"NVIDIA NVENC":"logiciel"+(fallback==null?"":" · "+fallback);report("Terminé · "+result,100);return result;
   }
-  public static void Track(Montage model,int track,string output,int height,ExportEncoderR1 mode,CancellationToken token,Action<string,int> report){var original=model.Tracks[track];if(original.Video==null||original.Fx.Graphic){report(original.Video==null?"Export audio":"ProRes 4444 · transparence conservée",0);var special=Engine.Snapshot936(model);special.Tracks[track].Encoder="x264";Engine.Export936(special,track,output,token,p=>report(original.Video==null?"Audio":"ProRes 4444 · transparence",p),0,-1,height);report(original.Video==null?"Terminé · audio":"Terminé · ProRes 4444 transparent",100);return;}
+  public static void Track(Montage model,int track,string output,int height,ExportEncoderR1 mode,CancellationToken token,Action<string,int> report){var original=model.Tracks[track];if(original.Video==null||original.Fx.Graphic||Path.GetExtension(output).Equals(".mov",StringComparison.OrdinalIgnoreCase)){report(original.Video==null?"Export audio":"ProRes 4444 · transparence conservée",0);var special=Engine.Snapshot936(model);special.Tracks[track].Encoder="x264";Engine.Export936(special,track,output,token,p=>report(original.Video==null?"Audio":"ProRes 4444 · transparence",p),0,-1,height);report(original.Video==null?"Terminé · audio":"Terminé · ProRes 4444 transparent",100);return;}
    Execute(mode,token,report,Probe,encoder=>{var snapshot=Engine.Snapshot936(model);snapshot.Tracks[track].Encoder=encoder;Engine.Export936(snapshot,track,output,token,p=>report((encoder=="nvenc"?"NVIDIA":"Logiciel")+" · "+(p<20?"préparation":p<95?"effets et encodage":"finalisation"),p),0,-1,height);});}
   public static void Montage(Montage model,string output,int height,ExportEncoderR1 mode,CancellationToken token,Action<string,int> report){Execute(mode,token,report,Probe,encoder=>Composite941.Export(model,output,height,token,(phase,p)=>report((encoder=="nvenc"?"NVIDIA":"Logiciel")+" · "+phase,p),encoder));}
  }

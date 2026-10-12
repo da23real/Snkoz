@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -38,10 +38,10 @@ namespace Synkoz {
     }
    }
   }
-  static string Work(){string dir=Path.Combine(Path.GetTempPath(),"Snkoz_Calage_R5",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(dir);return dir;}
+  static string Work(Montage model){string dir=Path.Combine(ProjectStorageR11.Cache(model,"Calage"),Guid.NewGuid().ToString("N"));Directory.CreateDirectory(dir);return dir;}
   static void Clean(string dir){try{Directory.Delete(dir,true);}catch{}}
   public static FrameCacheR5 Video(Montage snapshot,int track,long first,int count,CancellationToken token){
-   string dir=Work();try{
+   string dir=Work(snapshot);try{
     string input=Path.Combine(dir,"video.mkv");double origin=CalibrationTimeR5.Seconds(first),length=count/30.0;
     RenderRangeR3.Prepare(snapshot,track,input,origin,length,270,token,false,true);
     string rotation=OrientationR2.Filter(snapshot.Tracks[track]).TrimStart(',');
@@ -52,7 +52,7 @@ namespace Synkoz {
    }finally{Clean(dir);}
   }
   public static WaveR5 Audio(Montage snapshot,int track,double origin,double length,CancellationToken token){
-   string dir=Work();try{
+   string dir=Work(snapshot);try{
     // Calibration displays recorded samples, before EQ, compressor and other audio effects.
     snapshot.Tracks[track].Fx.Audio=new AudioFxR2();string input=Path.Combine(dir,"audio.mkv");
     RenderRangeR3.Prepare(snapshot,track,input,origin,length,0,token,true);

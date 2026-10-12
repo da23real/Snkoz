@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 namespace Synkoz {
@@ -15,10 +15,10 @@ namespace Synkoz {
  }
  public sealed partial class EffectsForm936 {
   Preview936 embedded942;Panel previewHost942;Form large942;
-  void InitPreview942(TableLayoutPanel layout){var shell=new TableLayoutPanel{Dock=DockStyle.Fill,RowCount=2,ColumnCount=1};shell.RowStyles.Add(new RowStyle(SizeType.Absolute,32));shell.RowStyles.Add(new RowStyle(SizeType.Percent,100));var enlarge=new Button{Text="Agrandir le preview",Dock=DockStyle.Fill};shell.Controls.Add(enlarge,0,0);previewHost942=new Panel{Dock=DockStyle.Fill,BackColor=Color.Black};shell.Controls.Add(previewHost942,0,1);layout.Controls.Add(shell,2,1);embedded942=new Preview936{TopLevel=false,FormBorderStyle=FormBorderStyle.None,Dock=DockStyle.Fill,MinimumSize=Size.Empty};previewHost942.Controls.Add(embedded942);embedded942.Show();enlarge.Click+=delegate{if(large942!=null){large942.Activate();return;}large942=new Form{Text="Preview — agrandi",Size=new Size(1100,700),StartPosition=FormStartPosition.CenterParent};previewHost942.Controls.Remove(embedded942);large942.Controls.Add(embedded942);large942.FormClosing+=delegate{large942.Controls.Remove(embedded942);if(!IsDisposed){previewHost942.Controls.Add(embedded942);embedded942.Show();}};large942.FormClosed+=delegate{large942=null;};large942.Show(this);};FormClosed+=delegate{if(large942!=null)large942.Close();embedded942.Dispose();};}
-  public void RenderPreview942(Montage m,int track,double start,double length){embedded942.Render(m,track,start,length,m.Tracks[track].Fx.PreviewHeight941,true);}
+  void InitPreview942(TableLayoutPanel layout){var shell=new TableLayoutPanel{Dock=DockStyle.Fill,RowCount=2,ColumnCount=1};shell.RowStyles.Add(new RowStyle(SizeType.Absolute,32));shell.RowStyles.Add(new RowStyle(SizeType.Percent,100));var enlarge=new Button{Text="Agrandir le preview",Dock=DockStyle.Fill};shell.Controls.Add(enlarge,0,0);previewHost942=new Panel{Dock=DockStyle.Fill,BackColor=Color.Black};shell.Controls.Add(previewHost942,0,1);layout.Controls.Add(shell,2,1);layout.SetRowSpan(shell,3);InitTextPreviewR14(shell);embedded942=new Preview936{TopLevel=false,FormBorderStyle=FormBorderStyle.None,Dock=DockStyle.Fill,MinimumSize=Size.Empty};previewHost942.Controls.Add(embedded942);embedded942.CompactMidiR11(true);embedded942.Show();enlarge.Click+=delegate{if(large942!=null){WindowFocusR15.Raise(large942);return;}large942=new Form{Icon=embedded942.Icon,Text="Preview — agrandi",Size=new Size(1100,700),StartPosition=FormStartPosition.CenterParent};previewHost942.Controls.Remove(embedded942);large942.Controls.Add(embedded942);embedded942.CompactMidiR11(false);large942.FormClosing+=delegate{large942.Controls.Remove(embedded942);if(!IsDisposed){previewHost942.Controls.Add(embedded942);embedded942.CompactMidiR11(true);embedded942.Show();}};large942.FormClosed+=delegate{large942=null;};embedded942.ExitLargeR10=()=>{if(large942!=null)large942.Close();};large942.FormClosed+=delegate{embedded942.ExitLargeR10=null;};large942.Show(this);};FormClosed+=delegate{if(large942!=null)large942.Close();embedded942.Dispose();};}
+  public void RenderPreview942(Montage m,int track,double start,double length){embedded942.AutomationCommitR21=AutomationCommitR21;embedded942.Render(m,track,start,length,m.Tracks[track].Fx.PreviewHeight941,true);}
  }
  public sealed partial class Preview936 {
-  protected override void Dispose(bool disposing){if(disposing){clock.Stop();clock.Dispose();if(cancellation!=null)try{cancellation.Cancel();}catch(ObjectDisposedException){}if(player!=null)player.Stop();if(!rendering)Cleanup();}base.Dispose(disposing);}
+  protected override void Dispose(bool disposing){if(disposing){clock.Stop();clock.Dispose();if(cancellation!=null)try{cancellation.Cancel();}catch(ObjectDisposedException){}if(player!=null)player.Stop();if(!rendering&&!savingR9)Cleanup();}base.Dispose(disposing);}
  }
 }

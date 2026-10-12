@@ -1,0 +1,4 @@
+﻿using System;using System.IO;using System.Linq;using System.Windows.Forms;
+namespace Synkoz {public sealed partial class EffectsForm936 {
+ void LegacyTextPresetsR14(ContextMenuStrip menu,Effect936 effect){if(effect.Kind!=EffectKind936.Texte||PresetInputR14()=="Note"||!Directory.Exists(TextOutputsR13.Folder))return;var files=Directory.GetFiles(TextOutputsR13.Folder,"*.uktext");if(files.Length==0)return;var group=new ToolStripMenuItem("CC et valeur — presets R13");foreach(var file in files.OrderBy(Path.GetFileName)){string path=file;group.DropDownItems.Add(Path.GetFileNameWithoutExtension(path),null,delegate{try{TextOutputsR13.Apply(effect.TextR12,Store934.Load<TextOutputPresetR13>(path));if(editedR14!=null)editedR14();QueueRefresh938(list.SelectedIndex);textKeyR14=null;}catch(Exception ex){ErrorR8.Show(windowOwnerR12??this,ex.Message);}});}menu.Items.Add(group);}
+}}

@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-[assembly:System.Reflection.AssemblyInformationalVersion("V1 (A01)")]
-[assembly:System.Reflection.AssemblyVersion("10.1.0.1")]
-[assembly:System.Reflection.AssemblyFileVersion("10.1.0.1")]
+[assembly:System.Reflection.AssemblyInformationalVersion("VA01.15 R21 — composition, automations et audio — build 10.1.15.20")]
+[assembly:System.Reflection.AssemblyVersion("10.1.15.20")]
+[assembly:System.Reflection.AssemblyFileVersion("10.1.15.20")]
 namespace UrbanKaoz.DisplayRecorder {
   internal sealed partial class MainForm : Form {
     AudioMidiForm audioForm904;
@@ -25,13 +25,13 @@ namespace UrbanKaoz.DisplayRecorder {
       if(commands.Count>=32)throw new IOException("Commandes USB en attente : envoi audio arrêté");
       Enqueue(kind+","+channel+","+number+","+value);
     }
-    void EnsureAudio939(){if(audioForm904==null||audioForm904.IsDisposed)audioForm904=new AudioMidiForm(AudioTempo904,SendUsbMessage901,()=>ready);}
-    void OpenAudio904(){EnsureAudio939();audioForm904.Show(this);audioForm904.Activate();}
+    void EnsureAudio939(){if(audioForm904==null||audioForm904.IsDisposed)audioForm904=new AudioMidiForm(AudioTempo904,SendUsbMessage901,()=>ready){ConnectR5=()=>BeginConnect909()};}
+    void OpenAudio904(){EnsureAudio939();if(!audioForm904.Visible)audioForm904.Show(this);if(audioForm904.WindowState==FormWindowState.Minimized)audioForm904.WindowState=FormWindowState.Normal;audioForm904.BringToFront();audioForm904.Activate();}
     internal CaptureState state=new CaptureState();
     internal Surface surface=new Surface();
     internal UrbanKaoz.Timeline timeline;
     readonly PictureBox ep=new PictureBox{Dock=DockStyle.Fill,SizeMode=PictureBoxSizeMode.Zoom};
-    readonly ComboBox ports=new ComboBox{FormattingEnabled=true},lcdPorts=new ComboBox{FormattingEnabled=true},skins=new ComboBox{FormattingEnabled=true},fps=new ComboBox{FormattingEnabled=true};
+    readonly ComboBox ports=new Synkoz.ScrollComboR8{FormattingEnabled=true},lcdPorts=new Synkoz.ScrollComboR8{FormattingEnabled=true},skins=new Synkoz.ScrollComboR8{FormattingEnabled=true},fps=new Synkoz.ScrollComboR8{FormattingEnabled=true};
     readonly Label status=new Label(),songStatus=new Label(),recStatus=new Label();
     readonly Button connect=new Button(),lcdConnect=new Button(),record=new Button(),obsButton=new Button();
     readonly CheckBox thin=new CheckBox{Text="Cadre",Checked=true,AutoSize=true},follow=new CheckBox{Text="Suivre",AutoSize=true};
@@ -72,7 +72,7 @@ namespace UrbanKaoz.DisplayRecorder {
     DisplaySkin Skin {get{return (DisplaySkin)Math.Max(0,skins.SelectedIndex);}}
 
     public MainForm(){
-      Text="Snkoz V1";AutoScaleMode=AutoScaleMode.None;
+      Icon=Icon.ExtractAssociatedIcon(Application.ExecutablePath);Text="Snkoz — VA01.15 R21 — composition, automations et audio — build 10.1.15.20";var errorStatusR8=new Label{Dock=DockStyle.Bottom,Height=24,AutoEllipsis=true};Controls.Add(errorStatusR8);Synkoz.ErrorR8.Reported+=message=>{if(!IsDisposed){if(InvokeRequired)BeginInvoke(new Action(()=>errorStatusR8.Text=message));else errorStatusR8.Text=message;}};AutoScaleMode=AutoScaleMode.None;
       Font=new Font("Segoe UI",8.5f);BackColor=Color.FromArgb(19,22,29);ForeColor=Color.White;
       ClientSize=new Size(1248,632);MinimumSize=new Size(1000,600);StartPosition=FormStartPosition.CenterScreen;
       var layout=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=4,Padding=new Padding(4),Margin=Padding.Empty};
@@ -84,7 +84,7 @@ namespace UrbanKaoz.DisplayRecorder {
       fps.Width=48;fps.DropDownStyle=ComboBoxStyle.DropDownList;fps.Items.AddRange(new object[]{"5","10","25","30","50","60"});fps.SelectedIndex=3;
       skins.Width=104;skins.DropDownStyle=ComboBoxStyle.DropDownList;skins.Items.AddRange(new object[]{"Réel LCD","Free Party","Kawaï","Bling Bling","Futuriste","Minimal"});skins.SelectedIndex=0;skins.SelectedIndexChanged+=delegate{dirty=true;};bar.Controls.Add(skins);bar.Controls.Add(thin);thin.CheckedChanged+=delegate{dirty=true;};
       obsButton.Text="OBS : hors ligne";obsButton.AutoSize=true;Style(obsButton);obsButton.Click+=delegate{ObsSettings();};// OBS controls removed; capture owns its independent tab.
-      Add(bar,"Carte SD Tee",OpenSd905);bar.Controls.Add(audioLamp909);tip.SetToolTip(audioLamp909,"Note envoyée par USB (sans attendre de confirmation)");Add(bar,"Relâcher tout (Échap)",Release);Add(bar,"Resynchroniser",()=>{if(ready){SendSong("SYNC");if(lcdPort!=null)lcdPort.WriteLine("SNAPSHOT");rowCount=0;Array.Clear(rows,0,rows.Length);Notice("Resynchronisation Song et écrans…");}});
+      Add(bar,"Carte SD Tee",OpenSd905);Add(bar,"Récupérer projet vers PC",()=>RecoverProject08(false));Add(bar,"Réinjecter projet",()=>RecoverProject08(true));bar.Controls.Add(audioLamp909);tip.SetToolTip(audioLamp909,"Note envoyée par USB (sans attendre de confirmation)");Add(bar,"Relâcher tout (Échap)",Release);Add(bar,"Resynchroniser",()=>{if(ready){SendSong("SYNC");if(lcdPort!=null)lcdPort.WriteLine("SNAPSHOT");rowCount=0;Array.Clear(rows,0,rows.Length);Notice("Resynchronisation Song et écrans…");}});
       bar.Controls.Add(new Label{Text="Picran LCD",AutoSize=true,Margin=new Padding(3,6,0,0)});lcdPorts.Width=70;lcdPorts.DropDownStyle=ComboBoxStyle.DropDownList;bar.Controls.Add(lcdPorts);lcdConnect.Text="Relier LCD";lcdConnect.AutoSize=true;Style(lcdConnect);lcdConnect.Click+=delegate{if(lcdPort!=null){StopRecord();CloseLcd();}else ConnectLcd();};bar.Controls.Add(lcdConnect);
       recStatus.AutoSize=true;recStatus.Margin=new Padding(8,6,0,0);recStatus.Text="Ctrl+clic : maintien · molette : rotation · clic droit : câblage / neutralisation";bar.Controls.Add(recStatus);
       layout.Controls.Add(bar,0,0);
@@ -103,7 +103,7 @@ namespace UrbanKaoz.DisplayRecorder {
       timeline=new UrbanKaoz.Timeline(state.Song,SendSong){Dock=DockStyle.Fill,Row=24,ReadOnly=true};tip.SetToolTip(timeline,"Molette : pistes · Ctrl+molette : zoom temps · Maj+molette : défilement temps\nCliquer/glisser les blocs : édition Song · ZL : clic pour éditer");
       songPanel.Controls.Add(timeline);songPanel.Controls.Add(songBar);views.Controls.Add(songPanel,1,0);layout.Controls.Add(views,0,1);
       surface.Dock=DockStyle.Fill;surface.Margin=Padding.Empty;surface.Screens=state.Screens;surface.Send=Enqueue;surface.Notice=Notice;layout.Controls.Add(surface,0,2);
-      status.Dock=DockStyle.Fill;status.AutoEllipsis=true;status.Text="Choisir le port USB du Teensy (COM6 à la dernière installation).";layout.Controls.Add(status,0,3);tabs933=new TabControl{Dock=DockStyle.Fill};var urban933=new TabPage("Urban Kaoz"){BackColor=BackColor};urban933.Controls.Add(layout);var video933=new TabPage("Prise");capture933=new Synkoz.CapturePanel(()=>ready,()=>BeginConnect909(),Enqueue);Synkoz.Engine.ScreenSnapshot935=()=>state.Snapshot().Where(p=>p.StartsWith("UKD1|"));video933.Controls.Add(capture933);tabs933.TabPages.Add(urban933);tabs933.TabPages.Add(video933);var montage934=new TabPage("Montage");montage934.Controls.Add(capture933.MontageView);tabs933.TabPages.Add(montage934);Controls.Add(tabs933);var common941=new FlowLayoutPanel{Dock=DockStyle.Top,Height=40,FlowDirection=FlowDirection.RightToLeft,WrapContents=true,AutoScroll=true,Padding=new Padding(3)};bar.Controls.Remove(ports);connectGroup939.Controls.Remove(connect);common941.Controls.Add(ports);common941.Controls.Add(connect);bar.Controls.Remove(autoConnect909);common941.Controls.Add(autoConnect909);var scan941=new Button{Text="Ports",AutoSize=true};scan941.Click+=delegate{Scan();};common941.Controls.Add(scan941);common941.Controls.Add(MicroPanel939());tabs933.Appearance=TabAppearance.FlatButtons;tabs933.ItemSize=new Size(0,1);tabs933.SizeMode=TabSizeMode.Fixed;foreach(TabPage page942 in tabs933.TabPages.Cast<TabPage>().Reverse()){var tab942=new Button{Text=page942.Text,Width=80,Height=28};tab942.Click+=delegate{tabs933.SelectedTab=page942;};common941.Controls.Add(tab942);}Controls.Add(common941);common941.SendToBack();var language945=new ComboBox{FormattingEnabled=true,Width=75,DropDownStyle=ComboBoxStyle.DropDownList};language945.Items.AddRange(new object[]{"Français","English"});language945.SelectedIndex=Synkoz.Language945.English?1:0;language945.SelectedIndexChanged+=delegate{Synkoz.Language945.Set(language945.SelectedIndex==1);};language945.Dispose();tabs933.SelectedIndexChanged+=delegate{dirty=true;};
+      status.Dock=DockStyle.Fill;status.AutoEllipsis=true;status.Text="Choisir le port USB du Teensy (COM6 à la dernière installation).";layout.Controls.Add(status,0,3);tabs933=new TabControl{Dock=DockStyle.Fill};var urban933=new TabPage("Urban Kaoz"){BackColor=BackColor};urban933.Controls.Add(layout);var video933=new TabPage("Prise");capture933=new Synkoz.CapturePanel(()=>ready,()=>BeginConnect909(),Enqueue);Synkoz.Engine.ScreenSnapshot935=()=>state.Snapshot().Where(p=>p.StartsWith("UKD1|"));capture933.ReadMicroA01=()=>{EnsureAudio939();return audioForm904.ExportCaptureA01();};capture933.WriteMicroA01=json=>{EnsureAudio939();audioForm904.ImportCaptureA01(json);};capture933.StartMicroA01=()=>{EnsureAudio939();audioForm904.StartCaptureA01();};video933.Controls.Add(capture933);tabs933.TabPages.Add(urban933);tabs933.TabPages.Add(video933);var montage934=new TabPage("Montage");montage934.Controls.Add(capture933.MontageView);tabs933.TabPages.Add(montage934);Controls.Add(tabs933);var common941=new FlowLayoutPanel{Dock=DockStyle.Top,Height=40,FlowDirection=FlowDirection.RightToLeft,WrapContents=true,AutoScroll=true,Padding=new Padding(3)};bar.Controls.Remove(ports);connectGroup939.Controls.Remove(connect);common941.Controls.Add(ports);common941.Controls.Add(connect);bar.Controls.Remove(autoConnect909);common941.Controls.Add(autoConnect909);var scan941=new Button{Text="Ports",AutoSize=true};scan941.Click+=delegate{Scan();};common941.Controls.Add(scan941);common941.Controls.Add(MicroPanel939());tabs933.Appearance=TabAppearance.FlatButtons;tabs933.ItemSize=new Size(0,1);tabs933.SizeMode=TabSizeMode.Fixed;foreach(TabPage page942 in tabs933.TabPages.Cast<TabPage>().Reverse()){var tab942=new Button{Text=page942.Text,Width=page942.Text=="Urban Kaoz"?110:90,Height=28,Image=Synkoz.SectionIconsR13.Create(page942.Text),ImageAlign=ContentAlignment.MiddleLeft,TextImageRelation=TextImageRelation.ImageBeforeText};tab942.Disposed+=delegate{if(tab942.Image!=null)tab942.Image.Dispose();};tab942.Click+=delegate{tabs933.SelectedTab=page942;};common941.Controls.Add(tab942);}Controls.Add(common941);common941.SendToBack();Synkoz.HeaderR14.Install(this,common941,capture933.MontageView);InstallMenus15();var language945=new Synkoz.ScrollComboR8{FormattingEnabled=true,Width=75,DropDownStyle=ComboBoxStyle.DropDownList};language945.Items.AddRange(new object[]{"Français","English"});language945.SelectedIndex=Synkoz.Language945.English?1:0;language945.SelectedIndexChanged+=delegate{Synkoz.Language945.Set(language945.SelectedIndex==1);};language945.Dispose();tabs933.SelectedIndexChanged+=delegate{dirty=true;};tabs933.SelectedTab=video933;
       lastFolder=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),"Snkoz");obsFolder=lastFolder;LoadSettings();Scan();
       obs.Connected+=()=>SafeUi(()=>{obsButton.Text="OBS : prêt";Notice("OBS connecté");});
       obs.Error+=message=>SafeUi(()=>{obsButton.Text="OBS : erreur";if(obsOwned){StopRecord();obsOwned=false;}obsTakeActive=false;obsRecording=false;Notice("OBS : "+message);});
@@ -124,7 +124,7 @@ namespace UrbanKaoz.DisplayRecorder {
       if(songWindow!=null)songWindow.Close();surface.Colors.Initialize();dirty=true;
     }
     void Connect(){BeginConnect909();}
-    void Disconnect(){
+    void Disconnect(){Synkoz.UiPolicyR20.Teensy=false;
       ++connectGeneration909;connecting909=false;nextConnect909=session.ElapsedMilliseconds+1000;
       if(sdResponse!=null)sdResponse.TrySetException(new IOException("Tee déconnecté."));
       CloseLcd();
@@ -181,7 +181,7 @@ namespace UrbanKaoz.DisplayRecorder {
         lastLcdRx=session.ElapsedMilliseconds;if(!packet.StartsWith("UKD1|"))return;
       }else lastRx=session.ElapsedMilliseconds;
       if(packet.StartsWith("PC1,HELLO,")){
-        string peer; if(!Compatible909(packet,out peer)){autoConnect909.Checked=false;Fault("protocole incompatible");return;}ready=true;surface.NumericAvailable917=NumericEntry917.Compatible(peer);sequence=0;pending=null;commands.Clear();surface.Connected=controls933;timeline.ReadOnly=!controls933;if(capture933!=null){Version fw934;capture933.Firmware934=Version.TryParse(peer.TrimStart('V','v'),out fw934)&&fw934>=new Version(9,34);capture933.Firmware935=fw934!=null&&fw934>=new Version(9,35);capture933.Firmware940=fw934!=null&&fw934>=new Version(9,40);capture933.Connected();}connect.Text=controls933?"Déconnecter Tee":"Connecter Tee";Notice("Teensy "+peer+" connecté — réception Song et écrans…");return;
+        string peer; if(!Compatible909(packet,out peer)){autoConnect909.Checked=false;Fault("protocole incompatible");return;}ready=true;Synkoz.UiPolicyR20.Teensy=true;surface.NumericAvailable917=NumericEntry917.Compatible(peer);sequence=0;pending=null;commands.Clear();surface.Connected=controls933;timeline.ReadOnly=!controls933;if(capture933!=null){Version fw934;string featureVersionA01=(peer=="V1"||peer=="A01"||(peer.StartsWith("VA",StringComparison.OrdinalIgnoreCase)&&NumericEntry917.Compatible(peer)))?"V9.42":peer;capture933.Firmware934=Version.TryParse(featureVersionA01.TrimStart('V','v'),out fw934)&&fw934>=new Version(9,34);capture933.Firmware935=fw934!=null&&fw934>=new Version(9,35);capture933.Firmware940=fw934!=null&&fw934>=new Version(9,40);capture933.Connected();}connect.Text=controls933?"Déconnecter Tee":"Connecter Tee";Notice("Teensy "+peer+" connecté — réception Song et écrans…");return;
       }
       if(packet.StartsWith("PC1,ACK,")){
         string[] a=packet.Split(',');int id;if(a.Length!=4||!int.TryParse(a[2],out id))return;
@@ -205,7 +205,7 @@ namespace UrbanKaoz.DisplayRecorder {
       songStatus.Text=(state.Song.Mode?"SONG":"SEQ")+" · "+state.Song.Bpm.ToString("0.#")+" BPM";record.BackColor=log==null?Color.FromArgb(43,50,62):Color.DarkRed;
     }
     void ShowBeInfo(Button control,int index,int bit,Point at){tip.Show("BE"+(index+1)+" — "+control.Text+"\n74HC165 : bit B"+bit+". Teensy 26 SH/LD, 27 CLK, 28 DATA (sérigraphie).\nFonction définie par le menu affiché.",control,at.X,at.Y+20,20000);
-      var m=new ContextMenuStrip();m.Items.Add(new ToolStripLabel("BE"+(index+1)+" — "+control.Text+"\n74HC165 : bit B"+bit+"\nTeensy : 26 SH/LD, 27 CLK, 28 DATA (sérigraphie)."));m.Items.Add(new ToolStripSeparator());m.Items.Add("Neutraliser BE"+(index+1)+" physique",null,delegate{Enqueue("MASK,HC,"+bit+",1");});m.Items.Add("Réactiver BE"+(index+1)+" physique",null,delegate{Enqueue("MASK,HC,"+bit+",0");});m.Closed+=delegate{m.Dispose();};m.Show(control,at);
+      var m=new ContextMenuStrip();m.Items.Add(new ToolStripLabel("BE"+(index+1)+" — "+control.Text+"\n74HC165 : bit B"+bit+"\nTeensy : 26 SH/LD, 27 CLK, 28 DATA (sérigraphie)."));m.Items.Add(new ToolStripSeparator());m.Items.Add("Neutraliser BE"+(index+1)+" physique",null,delegate{Enqueue("MASK,HC,"+bit+",1");});m.Items.Add("Réactiver BE"+(index+1)+" physique",null,delegate{Enqueue("MASK,HC,"+bit+",0");});Synkoz.MenuLifetimeR13.Attach(m,control);m.Show(control,at);
     }
     internal void Demo(){autoConnect909.Checked=false;StopRecord();Disconnect();NewState();demo=true;
       string[] text={"120. 1/4  START END","X01  1    0001 0016","PARA WRITEFX   ENV  ","TRACKPATCH--   LFO  "};for(int i=0;i<4;i++)UkdProtocol.Apply("UKD1|L|EP|"+i+"|"+text[i],state.Screens);
@@ -215,16 +215,16 @@ namespace UrbanKaoz.DisplayRecorder {
     }
     bool CanRecord(){return ready&&!demo&&rowCount==12&&state.Song.Synced;}
     void StartRecord(){if(log!=null)return;if(!CanRecord()){Notice("Capture : attendre les 12 lignes réelles et la synchronisation Song.");return;}
-      using(var d=new SaveFileDialog{Filter="Journal Snkoz|*.ukd",FileName="Snkoz_"+DateTime.Now.ToString("yyyyMMdd_HHmmss")+".ukd",InitialDirectory=Folder()})if(d.ShowDialog(this)==DialogResult.OK){lastFolder=Path.GetDirectoryName(d.FileName);try{StartRecordPath(d.FileName);}catch(Exception ex){Notice(ex.Message);}}
+      using(var d=new SaveFileDialog{AutoUpgradeEnabled=true,Filter="Journal Snkoz|*.ukd",FileName="Snkoz_"+DateTime.Now.ToString("yyyyMMdd_HHmmss")+".ukd",InitialDirectory=Folder()})if(d.ShowDialog(this)==DialogResult.OK){lastFolder=Path.GetDirectoryName(d.FileName);try{StartRecordPath(d.FileName);}catch(Exception ex){Notice(ex.Message);}}
     }
     void StartRecordPath(string path){if(!CanRecord())throw new InvalidOperationException("Capture réelle incomplète : Song ou écrans non synchronisés.");CaptureView();log=new StreamWriter(path,false,new UTF8Encoding(false));log.WriteLine("# UKDLOG2 V9.31 EP ABCD SONG");capturePaused=false;recordingClock=Stopwatch.StartNew();loadedLog=path;foreach(string p in state.Snapshot())log.WriteLine("0000000000|"+p);log.Flush();dirty=true;Notice("Enregistrement des trois flux dans "+path);}
     void RecordPacket(string packet){if(capture933!=null)capture933.LcdPacket935(packet);if(log==null||capturePaused)return;try{log.WriteLine(recordingClock.ElapsedMilliseconds.ToString("D10")+"|"+packet);}catch(Exception ex){StopRecord();Notice("Erreur capture : "+ex.Message);}}
     void StopRecord(){if(log==null)return;var writer=log;log=null;try{writer.WriteLine(recordingClock.ElapsedMilliseconds.ToString("D10")+"|END831");writer.Dispose();}catch(Exception ex){Notice("Erreur de fermeture capture : "+ex.Message);}recordingClock.Stop();capturePaused=false;recStatus.Text="Capture arrêtée · trois flux dans le .ukd";dirty=true;obsOwned=false;}
-    void OpenLog(){using(var d=new OpenFileDialog{Filter="Journal Snkoz|*.ukd"})if(d.ShowDialog(this)==DialogResult.OK){try{autoConnect909.Checked=false;StopRecord();Disconnect();NewState();demo=false;loadedLog=d.FileName;foreach(var e in Recording.Events(loadedLog))state.Apply(e.Packet);timeline.Start=state.Start;timeline.Step=state.Step;timeline.Row=state.Row;timeline.ScrollY=state.ScrollY;timeline.ReadOnly=true;Render();Notice("Journal chargé : "+Path.GetFileName(loadedLog)+(state.HasSong?"":" — ancien journal sans Song"));}catch(Exception ex){Notice("Journal illisible : "+ex.Message);}}}
+    void OpenLog(){using(var d=new OpenFileDialog{AutoUpgradeEnabled=true,Filter="Journal Snkoz|*.ukd"})if(d.ShowDialog(this)==DialogResult.OK){try{autoConnect909.Checked=false;StopRecord();Disconnect();NewState();demo=false;loadedLog=d.FileName;foreach(var e in Recording.Events(loadedLog))state.Apply(e.Packet);timeline.Start=state.Start;timeline.Step=state.Step;timeline.Row=state.Row;timeline.ScrollY=state.ScrollY;timeline.ReadOnly=true;Render();Notice("Journal chargé : "+Path.GetFileName(loadedLog)+(state.HasSong?"":" — ancien journal sans Song"));}catch(Exception ex){Notice("Journal illisible : "+ex.Message);}}}
     void Export(){StopRecord();if(string.IsNullOrEmpty(loadedLog)||!File.Exists(loadedLog)){Notice("Enregistrer ou ouvrir un .ukd avant l'export.");return;}
-      using(var d=new SaveFileDialog{Filter="Vidéo AVI|*.avi",FileName=Path.GetFileNameWithoutExtension(loadedLog)+".avi",InitialDirectory=Folder(),Title="Nom commun des trois vidéos",OverwritePrompt=false}){
+      using(var d=new SaveFileDialog{AutoUpgradeEnabled=true,Filter="Vidéo AVI|*.avi",FileName=Path.GetFileNameWithoutExtension(loadedLog)+".avi",InitialDirectory=Folder(),Title="Nom commun des trois vidéos",OverwritePrompt=false}){
         if(d.ShowDialog(this)!=DialogResult.OK)return;lastFolder=Path.GetDirectoryName(d.FileName);string stem=Path.Combine(lastFolder,Path.GetFileNameWithoutExtension(d.FileName));var paths=Recording.Paths(stem);bool exists=false;foreach(string p in paths)exists|=File.Exists(p);
-        if(exists&&MessageBox.Show(this,"Remplacer les trois vidéos de ce nom ?","Export",MessageBoxButtons.YesNo)!=DialogResult.Yes)return;
+        if(exists&&Synkoz.ErrorR8.Show(this,"Remplacer les trois vidéos de ce nom ?","Export",MessageBoxButtons.YesNo)!=DialogResult.Yes)return;
         string input=loadedLog;int rate=int.Parse(fps.Text);DisplaySkin skin=Skin;bool frame=thin.Checked;
         using(var progress=new Form{Text="Export des trois vidéos",Size=new Size(420,140),StartPosition=FormStartPosition.CenterParent,FormBorderStyle=FormBorderStyle.FixedDialog,ControlBox=false}){
           var label=new Label{Dock=DockStyle.Top,Height=30,Text="Préparation…"};var bar=new ProgressBar{Dock=DockStyle.Top};progress.Controls.Add(bar);progress.Controls.Add(label);bool cancel=false,done=false;Exception error=null;var stop=new Button{Text="Annuler",Dock=DockStyle.Bottom};stop.Click+=delegate{cancel=true;};progress.Controls.Add(stop);
@@ -241,7 +241,7 @@ namespace UrbanKaoz.DisplayRecorder {
       nameForm=new Form{Text="Nom "+a[2]+" — Teensy",Size=new Size(470,155),StartPosition=FormStartPosition.CenterParent,Font=Font};var form=nameForm;string sid=nameSession;
       nameText=new TextBox{Text=a[6],MaxLength=limit,Dock=DockStyle.Top};form.Controls.Add(nameText);
       var buttons=new FlowLayoutPanel{Dock=DockStyle.Bottom,Height=40};form.Controls.Add(buttons);bool sent=false;
-      Add(buttons,"Valider",()=>{if(!ValidName(nameText.Text)){MessageBox.Show(form,"Utiliser des caractères ASCII sans virgule ni barre verticale.");return;}SendSong("NAMEEDIT,SET,"+sid+","+nameText.SelectionStart+","+nameText.Text);SendSong("NAMEEDIT,COMMIT,"+sid);sent=true;form.Close();});
+      Add(buttons,"Valider",()=>{if(!ValidName(nameText.Text)){Synkoz.ErrorR8.Show(form,"Utiliser des caractères ASCII sans virgule ni barre verticale.");return;}SendSong("NAMEEDIT,SET,"+sid+","+nameText.SelectionStart+","+nameText.Text);SendSong("NAMEEDIT,COMMIT,"+sid);sent=true;form.Close();});
       Add(buttons,"Annuler",()=>{SendSong("NAMEEDIT,CANCEL,"+sid);sent=true;form.Close();});
       form.FormClosed+=delegate{if(nameForm==form){nameForm=null;if(!sent&&ready)SendSong("NAMEEDIT,CANCEL,"+sid);}};form.Show(this);
     }
@@ -252,9 +252,9 @@ namespace UrbanKaoz.DisplayRecorder {
       panel.Controls.Add(new Label{Text="Mot de passe (non enregistré)",AutoSize=true});var password=new TextBox{Text=obsPassword,UseSystemPasswordChar=true,Width=555};panel.Controls.Add(password);
       var auto=new CheckBox{Text="Suivre OBS : démarrage, pause, reprise et arrêt",Checked=obsAuto,AutoSize=true};panel.Controls.Add(auto);
       var folder=new TextBox{Text=obsFolder,Width=555};panel.Controls.Add(folder);var midi=new CheckBox{Text="Envoyer MIDI Start au démarrage OBS",Checked=obsMidi,AutoSize=true};panel.Controls.Add(midi);
-      var devices=new ComboBox{FormattingEnabled=true,Width=555,DropDownStyle=ComboBoxStyle.DropDownList};devices.Items.AddRange(MidiOutput.Devices());if(midiDevice>=0&&midiDevice<devices.Items.Count)devices.SelectedIndex=midiDevice;else if(devices.Items.Count>0)devices.SelectedIndex=0;panel.Controls.Add(devices);
-      var actions=new FlowLayoutPanel{Width=560,Height=40};panel.Controls.Add(actions);Add(actions,"Choisir dossier",()=>{using(var d=new FolderBrowserDialog{SelectedPath=folder.Text})if(d.ShowDialog(f)==DialogResult.OK)folder.Text=d.SelectedPath;});
-      Add(actions,"Test MIDI Start",()=>{try{if(devices.SelectedIndex<0)throw new Exception("Choisir une sortie MIDI");MidiOutput.SendStart(devices.SelectedIndex);}catch(Exception ex){MessageBox.Show(f,ex.Message);}});
+      var devices=new Synkoz.ScrollComboR8{FormattingEnabled=true,Width=555,DropDownStyle=ComboBoxStyle.DropDownList};devices.Items.AddRange(MidiOutput.Devices());if(midiDevice>=0&&midiDevice<devices.Items.Count)devices.SelectedIndex=midiDevice;else if(devices.Items.Count>0)devices.SelectedIndex=0;panel.Controls.Add(devices);
+      var actions=new FlowLayoutPanel{Width=560,Height=40};panel.Controls.Add(actions);Add(actions,"Choisir dossier",()=>{using(var d=new Synkoz.FolderDialog08{SelectedPath=folder.Text})if(d.ShowDialog(f)==DialogResult.OK)folder.Text=d.SelectedPath;});
+      Add(actions,"Test MIDI Start",()=>{try{if(devices.SelectedIndex<0)throw new Exception("Choisir une sortie MIDI");MidiOutput.SendStart(devices.SelectedIndex);}catch(Exception ex){Synkoz.ErrorR8.Show(f,ex.Message);}});
       Add(actions,obs.IsConnected?"Déconnecter OBS":"Connecter OBS",()=>{obsAddress=addr.Text;obsPassword=password.Text;obsFolder=folder.Text;obsAuto=auto.Checked;obsMidi=midi.Checked;midiDevice=devices.SelectedIndex;
         if(obs.IsConnected){obs.Dispose();if(obsOwned)StopRecord();obsTakeActive=false;obsRecording=false;obsButton.Text="OBS : hors ligne";}else obs.Connect(obsAddress,obsPassword);f.Close();});
       f.FormClosing+=delegate{obsAddress=addr.Text;obsPassword=password.Text;obsFolder=folder.Text;obsAuto=auto.Checked;obsMidi=midi.Checked;midiDevice=devices.SelectedIndex;};f.ShowDialog(this);
@@ -290,4 +290,7 @@ namespace UrbanKaoz.DisplayRecorder {
     protected override void Dispose(bool disposing){if(disposing&&!disposed831){disposed831=true;if(!closing){closing=true;StopRecord();Disconnect();obs.Dispose();}timer.Dispose();tip.Dispose();if(ep.Image!=null)ep.Image.Dispose();}base.Dispose(disposing);}
   }
 }
+
+
+
 

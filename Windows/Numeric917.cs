@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
@@ -9,7 +9,7 @@ namespace UrbanKaoz.DisplayRecorder {
   readonly int minimum,maximum;
   readonly Action<int> commit;
   bool submitted;
-  internal static bool Compatible(string firmware){Version v;return Version.TryParse(firmware.TrimStart('V','v'),out v)&&v>=new Version(9,17);}
+  internal static bool Compatible(string firmware){Version v;if(firmware=="V1"||firmware=="A01")return true;if(firmware.StartsWith("VA",StringComparison.OrdinalIgnoreCase)&&Version.TryParse(firmware.Substring(2),out v))return v.Major>=1;return Version.TryParse(firmware.TrimStart('V','v'),out v)&&v>=new Version(9,17);}
   internal NumericEntry917(string title,int value,int lo,int hi,Action<int> apply){
    minimum=lo;maximum=hi;commit=apply;Text=title;Size=new Size(360,150);FormBorderStyle=FormBorderStyle.FixedDialog;MaximizeBox=false;MinimizeBox=false;ShowInTaskbar=false;StartPosition=FormStartPosition.CenterParent;Padding=new Padding(12);KeyPreview=true;
    Input.Text=value.ToString(CultureInfo.InvariantCulture);help.Text=lo+" à "+hi+"\r\nEntrée : valider · Échap : annuler";Controls.Add(help);Controls.Add(Input);
